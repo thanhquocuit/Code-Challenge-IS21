@@ -10,6 +10,7 @@ import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 // Application's pages components
 import KanbanBoardPage from './pages/KanbanBoardPage';
 import AdminPage from './pages/AdminPage';
+import LoginPage from './pages/LoginPage';
 
 /** 
  * Main app page routing table
@@ -18,6 +19,10 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: <KanbanBoardPage />,
+  },
+  {
+    path: "/login",
+    element: <LoginPage />,
   },
   {
     path: "/admin",

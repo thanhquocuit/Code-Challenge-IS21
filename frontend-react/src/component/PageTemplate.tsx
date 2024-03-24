@@ -18,10 +18,10 @@ function MenuToggler(props: { onToggle: (expand: boolean) => void }) {
     }} />
 }
 
-function AppIcon(props: { to: string }) {
+export function AppIcon(props: { to: string }) {
     return (
         <Link to={props.to}>
-            <Box cursor='pointer'>
+            <Box cursor='pointer' w=''>
                 <img className="header-icon" src="/logo64.png" alt="paint stock icon" />
                 <Heading float='right' size='lg' pt='5px' pl='1' mb='0' fontStyle='italic'>My Paint Stock</Heading>
             </Box>
@@ -40,7 +40,7 @@ function SearchBar(props: BoxProps) {
     )
 }
 
-function ThemeToggler() {
+export function ThemeToggler() {
     const { toggleColorMode, colorMode } = useColorMode();
 
     return (
