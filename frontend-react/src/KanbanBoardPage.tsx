@@ -67,7 +67,7 @@ function KanbanBoard(props: { title: string }) {
   )
 }
 
-function App() {
+export default function KanbanBoardPage() {
   function Separator() {
     return <hr style={{ width: '33%' }} />
   }
@@ -80,5 +80,3 @@ function App() {
     </PageTemplate>
   );
 }
-
-export default App;

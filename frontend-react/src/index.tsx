@@ -7,23 +7,28 @@ import { ChakraProvider } from '@chakra-ui/react';
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 //import reportWebVitals from './reportWebVitals';
 
-import App from './App';
+import KanbanBoardPage from './KanbanBoardPage';
 
+/** 
+ * Main app page routing table
+ */
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <App />,
+    element: <KanbanBoardPage />,
   },
 ]);
 
-const root = ReactDOM.createRoot(
-  document.getElementById('root') as HTMLElement
-);
-root.render(
+ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
+
+    {/* Setup: ChakraUI */}
     <ChakraProvider theme={AppTheme}>
+
+      {/* Setup: React Router Dom */}
       <RouterProvider router={router} />
     </ChakraProvider>
+
   </React.StrictMode>
 );
 
