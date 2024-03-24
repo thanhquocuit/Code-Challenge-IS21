@@ -19,6 +19,7 @@ import HttpStatusCodes from '@src/constants/HttpStatusCodes';
 
 import { NodeEnvs } from '@src/constants/misc';
 import { RouteError } from '@src/other/classes';
+import * as SQLite from '@src/repos/SQLiteORM'
 
 
 // **** Variables **** //
@@ -30,7 +31,7 @@ const app = express();
 
 // Basic middleware
 app.use(express.json());
-app.use(express.urlencoded({extended: true}));
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser(EnvVars.CookieProps.Secret));
 
 // Show routes called in console during development
@@ -42,6 +43,9 @@ if (EnvVars.NodeEnv === NodeEnvs.Dev.valueOf()) {
 if (EnvVars.NodeEnv === NodeEnvs.Production.valueOf()) {
   app.use(helmet());
 }
+
+// ORM connection
+SQLite.OpenORM()
 
 // Add APIs, must be after middleware
 app.use(Paths.Base, BaseRouter);
@@ -86,7 +90,7 @@ app.get('/users', (req: Request, res: Response) => {
   if (!jwt) {
     res.redirect('/');
   } else {
-    res.sendFile('users.html', {root: viewsDir});
+    res.sendFile('users.html', { root: viewsDir });
   }
 });
 
