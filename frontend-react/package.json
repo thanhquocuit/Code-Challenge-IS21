@@ -25,8 +25,10 @@
     "react-icons": "^5.0.1",
     "react-router-dom": "^6.22.3",
     "react-scripts": "5.0.1",
+    "react-sortablejs": "^6.1.4",
     "react-spinners": "^0.13.8",
     "sass": "^1.72.0",
+    "sortablejs": "^1.15.2",
     "typescript": "^4.9.5",
     "ui-avatar-svg": "^1.0.0",
     "web-vitals": "^2.1.4"
@@ -57,6 +59,7 @@
   },
   "devDependencies": {
     "@types/animejs": "^3.1.12",
+    "@types/sortablejs": "^1.15.8",
     "cross-env": "^7.0.3",
     "http-proxy-middleware": "^2.0.6"
   }
