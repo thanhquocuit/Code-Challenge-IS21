@@ -7,7 +7,9 @@ import { ChakraProvider } from '@chakra-ui/react';
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 //import reportWebVitals from './reportWebVitals';
 
-import KanbanBoardPage from './KanbanBoardPage';
+// Application's pages components
+import KanbanBoardPage from './pages/KanbanBoardPage';
+import AdminPage from './pages/AdminPage';
 
 /** 
  * Main app page routing table
@@ -16,6 +18,10 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: <KanbanBoardPage />,
+  },
+  {
+    path: "/admin",
+    element: <AdminPage />,
   },
 ]);
 

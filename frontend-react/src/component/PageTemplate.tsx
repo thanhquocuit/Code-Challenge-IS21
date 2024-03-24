@@ -1,12 +1,12 @@
 import { As, Box, BoxProps, Button, Flex, HStack, Heading, Icon, IconButton, Input, InputGroup, InputRightElement, Menu, MenuButton, MenuDivider, MenuItem, MenuList, Stack, Text, Tooltip, useColorMode } from "@chakra-ui/react";
 import React from "react";
-import { FaBars, FaEye, FaPaintRoller, FaSearch, FaSignOutAlt } from "react-icons/fa";
+import { FaBars, FaEye, FaList, FaPaintRoller, FaSearch, FaSignOutAlt } from "react-icons/fa";
 import { FaBoxOpen } from "react-icons/fa6";
 import { MdDarkMode, MdLabel, MdLightMode } from "react-icons/md";
-import { ScrollRestoration } from "react-router-dom";
-import { UIAvatar } from "./ElementUtils";
+import { Link, ScrollRestoration, useNavigate } from "react-router-dom";
 import ImgPaintBrush from '../static/paint_brush.png';
 import ImgPaintDrops from '../static/paint_drops.png';
+import { UIAvatar } from "./ElementUtils";
 
 function MenuToggler(props: { onToggle: (expand: boolean) => void }) {
     const [expanded, setExpanded] = React.useState(false);
@@ -18,11 +18,15 @@ function MenuToggler(props: { onToggle: (expand: boolean) => void }) {
     }} />
 }
 
-function AppIcon() {
-    return <>
-        <img className="header-icon" src="/logo64.png" alt="paint stock icon" />
-        <Heading size='md'>My Paint Stock</Heading>
-    </>
+function AppIcon(props: { to: string }) {
+    return (
+        <Link to={props.to}>
+            <Box cursor='pointer'>
+                <img className="header-icon" src="/logo64.png" alt="paint stock icon" />
+                <Heading float='right' size='lg' pt='5px' pl='1' mb='0' fontStyle='italic'>My Paint Stock</Heading>
+            </Box>
+        </Link>
+    )
 }
 
 function SearchBar(props: BoxProps) {
@@ -87,7 +91,7 @@ function Header(props: { onToggleLeftBar: (expand: boolean) => void }) {
             {/** Left side */}
             <HStack flex='2'>
                 <MenuToggler onToggle={props.onToggleLeftBar} />
-                <AppIcon />
+                <AppIcon to='/' />
                 <SearchBar flex='2' marginLeft='2rem' />
             </HStack>
 
@@ -123,22 +127,24 @@ function MainMenu(props: { className: string, isMenuExpanded: boolean }) {
         setMenuState(false)
     }, [props.isMenuExpanded])
 
-    function Item(itemProps: PropsWithChildren<{ icon: As }>) {
+    function Item(itemProps: PropsWithChildren<{ icon: As, to: string }>) {
         return (
-            <Stack className="item" direction='row' m='1' pr='5' mr='5' py='2'
-                borderEndRadius='1rem' cursor='pointer'>
-                <Icon className="icon" fontSize='2rem' as={itemProps.icon} mt='1' />
-                <Text className="txt" fontWeight='500' fontSize='large' pt='1' m='0'>  {itemProps.children}</Text>
-            </Stack>
+            <Link to={itemProps.to}>
+                <Stack className="item" direction='row' m='1' pr='5' mr='5' py='2'
+                    borderEndRadius='1rem' cursor='pointer'>
+                    <Icon className="icon" fontSize='2rem' as={itemProps.icon} mt='1' />
+                    <Text className="txt" fontWeight='500' fontSize='large' pt='1' m='0'>  {itemProps.children}</Text>
+                </Stack>
+            </Link>
         )
     }
 
     return (
         <Flex className={`${props.className} ${menuState ? 'expanded' : ''}`} direction='column' pt='5'
             onPointerEnter={handlePointerEnter} onPointerLeave={handlePointerLeave}>
-            <Item icon={FaPaintRoller}>Orders</Item>
-            <Item icon={FaBoxOpen}>Stocks</Item>
-            <Item icon={MdLabel}>Custom labels</Item>
+            <Item icon={FaPaintRoller} to='/#orders'>Orders</Item>
+            <Item icon={FaBoxOpen} to='/#stock'>Stocks</Item>
+            <Item icon={MdLabel} to='/?label=custom'>Custom labels</Item>
         </Flex>
     )
 }
@@ -153,7 +159,7 @@ function MainContent(props: PropsWithChildren<{ className: string, isMenuExpande
         <div className={`${props.className} ${props.isMenuExpanded && 'menu-expanded'}`}>
 
             {/* Wrapper box to set the css property: relative for deco images*/}
-            <Box p='5' h='100%' pos='relative'>
+            <Box p='5' h='100%' minH='calc(100vh - 128px)' pos='relative'>
 
                 {/* children elements */}
                 {props.children}
@@ -198,4 +204,23 @@ export default function PageTemplate(props: PropsWithChildren<any>) {
             <ScrollRestoration />
         </div>
     </>
+}
+
+/**
+ * Page heading, place before main content.
+ * Title on the left side, and buttons on the right sides
+ * 
+ * @param props 
+ * @returns 
+ */
+export function PageHeading(props: PropsWithChildren<{ title: string }>) {
+    return (
+        <HStack justifyContent='space-between' mb={5}>
+            <Box>
+                <Icon as={FaList} display='inline-block' mr='3' mb='3' fontSize='x-large' color='gray' />
+                <Heading size='lg' display='inline-block'>{props.title}</Heading>
+            </Box>
+            {props.children}
+        </HStack >
+    )
 }

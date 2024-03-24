@@ -1,13 +1,20 @@
+/**
+ * Main home page: the kanban style board
+ */
+
 import { Box, Card, CardBody, CardHeader, Flex, Heading, Icon, Text } from '@chakra-ui/react';
 import React from 'react';
+import { FaList } from 'react-icons/fa';
 import { GrDrag } from "react-icons/gr";
 import { ReactSortable } from "react-sortablejs";
-import PageTemplate from './component/PageTemplate';
+import PageTemplate from '../component/PageTemplate';
 
 
 function Note(props: { color: string }) {
   return (
-    <Card mb='5' boxShadow='4px 4px 5px 2px rgba(0,0,0,0.2)' attr-color={props.color}>
+    <Card mb='5' boxShadow='4px 4px 5px 2px rgba(0,0,0,0.2)'
+      border="1px rgb(226, 232, 240) solid"
+      attr-color={props.color}>
       <CardHeader className='card-handle' display='flex'>
         <Box flex='0' minWidth='40px'>
           <Icon w={5} h={5} as={GrDrag} />
@@ -47,7 +54,11 @@ function KanbanBoard(props: { title: string }) {
   const listGroup = props.title.replaceAll(/\s+/g, '')
   return (
     <Box w='100%'>
-      <Heading size='lg'>Sorted by {props.title}</Heading>
+      <Box mb={5}>
+        <Icon as={FaList} display='inline-block' mr='3' mb='3' fontSize='x-large' color='gray' />
+        <Heading size='lg' display='inline-block'>Sorted by {props.title}</Heading>
+      </Box>
+
       <Flex className='kanban-board' dir='row' gap='5'>
         <KanbanColumn title='Available' listGroup={listGroup} items={[
           { id: 1, color: "blue" },
