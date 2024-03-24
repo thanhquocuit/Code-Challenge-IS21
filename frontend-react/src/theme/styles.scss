@@ -1,9 +1,147 @@
+/**
+Main page styles across the app
+*/
+
+:root {
+    --app-purple: #f000ff;
+}
+
 .page-header {
-    height: 52px;
-    padding: 0.2rem 1rem;
+    border-bottom: 1px rgb(226, 232, 240) solid;
+    height: 64px;
+    padding: 0.5rem 1rem 0.2rem 1rem;
+    position: -webkit-sticky;
+    position: sticky;
+    top: 0;
+    z-index: 98;
+    background-color: white;
 
     .header-icon {
         width: 48px;
         height: 48px;
+    }
+
+    .avatar-btn {
+        width: 42px;
+        padding: 0;
+        background: var(--app-purple);
+
+        &:hover {
+            background: var(--app-purple);
+            opacity: 0.5;
+        }
+    }
+}
+
+.page-content {
+    min-height: calc(100vh - 64px);
+
+    .left-menu {
+        position: fixed;
+        left: 0;
+        top: 64px;
+        z-index: 999;
+        width: 64px;
+        height: 100vh;
+        border-right: 1px rgb(226, 232, 240) solid;
+        transition: all linear 0.1s;
+        background-color: white;
+
+        .item {
+            .txt {
+                display: none;
+            }
+
+            .icon {
+                width: 64px;
+
+                &:hover {
+                    color: rgb(120, 0, 255);
+                }
+            }
+
+            &:hover {
+                background-color: unset;
+            }
+        }
+
+        &.expanded {
+            width: 320px;
+
+            .item {
+                .icon {
+                    margin-right: 16px;
+
+                    &:hover {
+                        color: unset;
+                    }
+                }
+
+                .txt {
+                    display: block;
+                }
+
+                &:hover {
+                    background-color: rgba(120, 0, 255, 0.2);
+                }
+            }
+        }
+    }
+
+    .right-content {
+        margin-left: 64px;
+        transition: all linear 0.1s;
+
+        &.menu-expanded {
+            margin-left: 320px;
+        }
+    }
+}
+
+.page-footer {
+    height: 64px;
+    border-top: 1px rgb(226, 232, 240) solid;
+}
+
+.kanban-board {
+    .board-cont {
+        min-height: 232px;
+    }
+
+    .ghost {
+        opacity: 0.4;
+    }
+
+    .chosen {
+        color: white;
+        background-color: rgb(120, 0, 255);
+    }
+
+    .card-handle {
+        cursor: move;
+
+        &:hover {
+            background-color: rgba(120, 0, 255, 0.2);
+        }
+    }
+}
+
+/* Dark theme */
+.chakra-ui-dark {
+    .page-header {
+        border-bottom: 1px rgba(212, 234, 250, 0.21) solid;
+        background-color: rgb(45, 55, 72);
+    }
+
+    .page-footer {
+        height: 64px;
+        border-top: 1px rgba(212, 234, 250, 0.21) solid;
+    }
+
+    .page-content {
+        .left-menu {
+            border-right: 1px rgba(212, 234, 250, 0.21) solid;
+            background-color: rgb(45, 55, 72);
+        }
     }
 }
