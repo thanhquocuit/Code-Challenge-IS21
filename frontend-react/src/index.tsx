@@ -4,13 +4,14 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import AppTheme from "./theme/theme";
 import { ChakraProvider } from '@chakra-ui/react';
-import { RouterProvider, createBrowserRouter } from 'react-router-dom';
+import { Navigate, RouterProvider, createBrowserRouter } from 'react-router-dom';
 //import reportWebVitals from './reportWebVitals';
 
 // Application's pages components
 import KanbanBoardPage from './pages/KanbanBoardPage';
 import AdminPage from './pages/AdminPage';
 import LoginPage from './pages/LoginPage';
+import PageNotFound from './pages/PageNotFound';
 
 /** 
  * Main app page routing table
@@ -27,6 +28,14 @@ const router = createBrowserRouter([
   {
     path: "/admin",
     element: <AdminPage />,
+  },
+  {
+    path: "/404",
+    element: <PageNotFound />,
+  },
+  {
+    path: "/*",
+    element: <Navigate to="/404" replace={true} />,
   },
 ]);
 
