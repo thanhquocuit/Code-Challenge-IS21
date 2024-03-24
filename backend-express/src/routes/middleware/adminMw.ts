@@ -11,20 +11,36 @@ import SessionUtil from '@src/util/SessionUtil';
 import { ISessionUser, UserRoles } from '@src/models/User';
 
 
-// **** Variables **** //
-
-const USER_UNAUTHORIZED_ERR = 'User not authorized to perform this action';
-
-
 // **** Types **** //
 
 type TSessionData = ISessionUser & JwtPayload;
 
-
 // **** Functions **** //
 
 /**
- * See note at beginning of file.
+ * Verify user logged in
+ */
+async function userMw(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  // Get session data
+  const sessionData = await SessionUtil.getSessionData<TSessionData>(req);
+  // Set session data to locals
+  if (typeof sessionData === 'object') {
+    res.locals.sessionUser = sessionData;
+    return next();
+  }
+  // Return an unauth error if user is not an admin
+  else return res
+    .status(HttpStatusCodes.UNAUTHORIZED)
+    .json({ error: "User is not logged in" });
+
+}
+
+/**
+ * Verify user logged in and is an an admin.
  */
 async function adminMw(
   req: Request,
@@ -40,15 +56,15 @@ async function adminMw(
   ) {
     res.locals.sessionUser = sessionData;
     return next();
-  // Return an unauth error if user is not an admin
+    // Return an unauth error if user is not an admin
   } else {
     return res
       .status(HttpStatusCodes.UNAUTHORIZED)
-      .json({ error: USER_UNAUTHORIZED_ERR });
+      .json({ error: 'User not authorized to perform this action' });
   }
 }
 
 
 // **** Export Default **** //
 
-export default adminMw;
+export default { adminMw, userMw } as const;

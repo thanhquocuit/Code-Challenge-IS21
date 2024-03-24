@@ -40,7 +40,7 @@ async function login(email: string, password: string): Promise<IUser> {
     // If password failed, wait 500ms this will increase security
     await tick(500);
     throw new RouteError(
-      HttpStatusCodes.UNAUTHORIZED, 
+      HttpStatusCodes.UNAUTHORIZED,
       Errors.Unauth,
     );
   }

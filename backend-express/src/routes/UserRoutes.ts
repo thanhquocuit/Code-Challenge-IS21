@@ -1,35 +1,43 @@
 import HttpStatusCodes from '@src/constants/HttpStatusCodes';
 
-import UserService from '@src/services/UserService';
+import UserRepo from '@src/repos/UserRepo';
 import { IUser } from '@src/models/User';
 import { IReq, IRes } from './types/express/misc';
+import { RouteError } from '@src/other/classes';
 
 
-// **** Functions **** //
+export const USER_NOT_FOUND_ERR = 'User not found';
 
 /**
  * Get all users.
  */
 async function getAll(_: IReq, res: IRes) {
-  const users = await UserService.getAll();
+  const users = await UserRepo.getAll();
   return res.status(HttpStatusCodes.OK).json({ users });
 }
 
 /**
  * Add one user.
  */
-async function add(req: IReq<{user: IUser}>, res: IRes) {
+async function add(req: IReq<{ user: IUser }>, res: IRes) {
   const { user } = req.body;
-  await UserService.addOne(user);
+  await UserRepo.add(user);
   return res.status(HttpStatusCodes.CREATED).end();
 }
 
 /**
  * Update one user.
  */
-async function update(req: IReq<{user: IUser}>, res: IRes) {
+async function update(req: IReq<{ user: IUser }>, res: IRes) {
   const { user } = req.body;
-  await UserService.updateOne(user);
+  const existings = await UserRepo.getOne(user.email);
+  if (!existings) {
+    throw new RouteError(
+      HttpStatusCodes.NOT_FOUND,
+      USER_NOT_FOUND_ERR,
+    );
+  }
+  await UserRepo.update(user);
   return res.status(HttpStatusCodes.OK).end();
 }
 
@@ -38,7 +46,7 @@ async function update(req: IReq<{user: IUser}>, res: IRes) {
  */
 async function delete_(req: IReq, res: IRes) {
   const id = +req.params.id;
-  await UserService.delete(id);
+  await UserRepo.delete(id);
   return res.status(HttpStatusCodes.OK).end();
 }
 

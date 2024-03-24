@@ -10,6 +10,10 @@ export default {
     Login: '/login',
     Logout: '/logout',
   },
+  PaintStock: {
+    Base: '/paints',
+    Get: '/all',
+  },
   Users: {
     Base: '/users',
     Get: '/all',

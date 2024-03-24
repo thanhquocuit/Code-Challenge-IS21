@@ -1,11 +1,11 @@
 // **** Variables **** //
 
-const INVALID_CONSTRUCTOR_PARAM = 'nameOrObj arg must a string or an ' + 
+const INVALID_CONSTRUCTOR_PARAM = 'nameOrObj arg must a string or an ' +
   'object with the appropriate user keys.';
 
 export enum UserRoles {
-  Standard,
-  Admin,
+  Standard = 0,
+  Admin = 1,
 }
 
 
@@ -13,10 +13,10 @@ export enum UserRoles {
 
 export interface IUser {
   id: number;
-  name: string;
   email: string;
-  pwdHash?: string;
-  role?: UserRoles;
+  name: string;
+  pwdHash: string;
+  role: UserRoles;
 }
 
 export interface ISessionUser {

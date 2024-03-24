@@ -1,11 +1,12 @@
 import { Router } from 'express';
 import jetValidator from 'jet-validator';
 
-import adminMw from './middleware/adminMw';
+import MW from './middleware/adminMw';
 import Paths from '../constants/Paths';
 import User from '@src/models/User';
 import AuthRoutes from './AuthRoutes';
 import UserRoutes from './UserRoutes';
+import PaintStockRoutes from './PaintStockRoutes';
 
 
 // **** Variables **** //
@@ -34,6 +35,16 @@ authRouter.get(
 // Add AuthRouter
 apiRouter.use(Paths.Auth.Base, authRouter);
 
+
+// ** Add PaintStockRoutes ** //
+const paintStockRouter = Router();
+paintStockRouter.get(
+  Paths.PaintStock.Get,
+  PaintStockRoutes.getAll,
+);
+
+// Add PaintStockRoutes
+apiRouter.use(Paths.PaintStock.Base, MW.userMw, paintStockRouter);
 
 // ** Add UserRouter ** //
 
@@ -67,7 +78,7 @@ userRouter.delete(
 );
 
 // Add UserRouter
-apiRouter.use(Paths.Users.Base, adminMw, userRouter);
+apiRouter.use(Paths.Users.Base, MW.adminMw, userRouter);
 
 
 // **** Export default **** //
