@@ -127,6 +127,10 @@ Main page styles across the app
     }
 }
 
+.chakra-toast {
+    color: white;
+}
+
 /* Dark theme */
 .chakra-ui-dark {
     .page-header {
@@ -144,5 +148,9 @@ Main page styles across the app
             border-right: 1px rgba(212, 234, 250, 0.21) solid;
             background-color: rgb(45, 55, 72);
         }
+    }
+
+    .chakra-toast {
+        color: unset;
     }
 }

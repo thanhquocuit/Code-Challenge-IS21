@@ -5,7 +5,7 @@ import { tick } from '@src/util/misc';
 
 import HttpStatusCodes from '@src/constants/HttpStatusCodes';
 import { RouteError } from '@src/other/classes';
-import { IUser } from '@src/models/User';
+import { IUser } from '@src/models/UserRepo';
 
 
 // **** Variables **** //

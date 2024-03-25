@@ -3,7 +3,7 @@ import jetValidator from 'jet-validator';
 
 import MW from './middleware/adminMw';
 import Paths from '../constants/Paths';
-import User from '@src/models/User';
+import User from '@src/models/UserRepo';
 import AuthRoutes from './AuthRoutes';
 import UserRoutes from './UserRoutes';
 import PaintStockRoutes from './PaintStockRoutes';
@@ -38,13 +38,29 @@ apiRouter.use(Paths.Auth.Base, authRouter);
 
 // ** Add PaintStockRoutes ** //
 const paintStockRouter = Router();
+
 paintStockRouter.get(
   Paths.PaintStock.Get,
   PaintStockRoutes.getAll,
 );
 
+paintStockRouter.put(
+  Paths.PaintStock.UpdatePaint,
+  validate(['data', PaintStockRoutes.isPaintItem]),
+  PaintStockRoutes.updatePaint,
+);
+
+paintStockRouter.put(
+  Paths.PaintStock.UpdateOrder,
+  validate(['data', PaintStockRoutes.isOrderItem]),
+  PaintStockRoutes.updateOrder,
+);
+
 // Add PaintStockRoutes
-apiRouter.use(Paths.PaintStock.Base, MW.userMw, paintStockRouter);
+apiRouter.use(
+  Paths.PaintStock.Base,
+  MW.userMw, // Require login to access /stock API
+  paintStockRouter);
 
 // ** Add UserRouter ** //
 
@@ -78,8 +94,13 @@ userRouter.delete(
 );
 
 // Add UserRouter
-apiRouter.use(Paths.Users.Base, MW.adminMw, userRouter);
+apiRouter.use(Paths.Users.Base,
+  MW.adminMw,  // Require to be an admin to access /user API
+  userRouter);
 
+
+// Get current session info
+apiRouter.get(Paths.Session, MW.currentSession);
 
 // **** Export default **** //
 

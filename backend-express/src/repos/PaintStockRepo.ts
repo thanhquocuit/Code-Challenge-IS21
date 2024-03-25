@@ -16,7 +16,6 @@ async function getAllPaints(): Promise<IPaint[]> {
 
 async function getAllOrders(): Promise<IOrder[]> {
     return new Promise<IOrder[]>((resovle) => {
-        const ls = [] as IOrder[]
         Db.connPool.all(`SELECT * FROM "Order" WHERE 1`, (_, rows: IOrder[]) => {
             resovle(rows.map(row => {
                 row.title = row.title || ''
@@ -30,7 +29,15 @@ async function getAllOrders(): Promise<IOrder[]> {
 async function updatePaint(obj: IPaint): Promise<boolean> {
     return new Promise<boolean>((resovle) => {
         Db.connPool.run(`UPDATE "Paint" SET title=?, color_code=?, desc=?, status=?, quantity=? WHERE id=?`,
-            [obj.title, obj.color_color, obj.desc, obj.status, obj.quantity, obj.id]);
+            [obj.title, obj.color_code, obj.desc, obj.status, obj.quantity, obj.id]);
+        resovle(true);
+    })
+}
+
+async function updateOrder(obj: IOrder): Promise<boolean> {
+    return new Promise<boolean>((resovle) => {
+        Db.connPool.run(`UPDATE "Order" SET title=?, address=?, paint_color=?, status=?, completed_date=?, completed_by=? WHERE id=?`,
+            [obj.title, obj.address, obj.paint_color, obj.status, obj.completed_date, obj.completed_by, obj.id]);
         resovle(true);
     })
 }
@@ -38,5 +45,6 @@ async function updatePaint(obj: IPaint): Promise<boolean> {
 export default {
     getAllPaints,
     getAllOrders,
-    updatePaint
+    updatePaint,
+    updateOrder
 } as const

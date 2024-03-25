@@ -4,7 +4,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import AppTheme from "./theme/theme";
 import { ChakraProvider } from '@chakra-ui/react';
-import { Navigate, RouterProvider, createBrowserRouter } from 'react-router-dom';
+import { Navigate, RouterProvider, createBrowserRouter, redirect } from 'react-router-dom';
 //import reportWebVitals from './reportWebVitals';
 
 // Application's pages components
@@ -13,30 +13,49 @@ import AdminPage from './pages/AdminPage';
 import LoginPage from './pages/LoginPage';
 import PageNotFound from './pages/PageNotFound';
 
+import Backend from './model/Backend';
+import { AlertDialog } from './component/AlertDialog';
+
 /** 
  * Main app page routing table
  */
 const router = createBrowserRouter([
-  {
-    path: "/",
-    element: <KanbanBoardPage />,
-  },
+
+  // The 404 page
+  { path: "/404", element: <PageNotFound /> },
+
+  // Route to the login page
   {
     path: "/login",
-    element: <LoginPage />,
+    loader: async () => { // If aldready having login session, nothing to visit the login page
+      let ok = await Backend.isLogin()
+      if (ok) return redirect('/') // No need to login, go directly to the home page
+
+      return null // go to the login page
+    },
+    element: <LoginPage />
   },
+
+  // Route to the main home page: kanban board.
+  {
+    path: "/",
+    loader: async () => { // With login required
+      let ok = await Backend.isLogin()
+      if (!ok) return redirect('/login') // Require to login. Navigate to the login page
+
+      return null // allow to access
+    },
+    element: <KanbanBoardPage />
+  },
+
   {
     path: "/admin",
+    loader: Backend.isAdmin, // With login and admin role required
     element: <AdminPage />,
   },
-  {
-    path: "/404",
-    element: <PageNotFound />,
-  },
-  {
-    path: "/*",
-    element: <Navigate to="/404" replace={true} />,
-  },
+
+  // Unexpected path, navigate back to 404 page
+  { path: "/*", element: <Navigate to="/404" replace={true} /> }
 ]);
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
@@ -49,6 +68,8 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
       <RouterProvider router={router} />
 
       {/* Generic alert dialog */}
+      <AlertDialog />
+
     </ChakraProvider>
 
   </React.StrictMode>

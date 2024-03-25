@@ -2,19 +2,21 @@
  * Main home page: the kanban style board
  */
 
-import { Box, Button, Card, CardBody, CardHeader, Flex, HStack, Heading, Icon, Text, useColorMode } from '@chakra-ui/react';
+import { Box, Button, Card, CardBody, CardHeader, Center, Flex, HStack, Heading, Icon, Text, useColorMode } from '@chakra-ui/react';
 import React from 'react';
 import { FaList } from 'react-icons/fa';
 import { GrDrag } from "react-icons/gr";
 import { MdOutlineAdd } from 'react-icons/md';
 import { ReactSortable } from "react-sortablejs";
-import PageTemplate from '../component/PageTemplate';
+import PageTemplate, { DataLoaderOp } from '../component/PageTemplate';
+import BE, { IOrder, IPaint, PaintStatus } from '../model/Backend';
+import { GridLoader } from 'react-spinners';
 
 
 function SVGPaintBucket(props: { color: string }) {
   const { colorMode } = useColorMode()
 
-  let stroke = props.color == 'black' ? 'lightgray' : 'black';
+  let stroke = props.color == '#000000' ? 'lightgray' : 'black';
   if (colorMode != 'light')
     stroke = props.color == 'lightgray' ? 'white' : 'lightgray';
 
@@ -26,7 +28,7 @@ function SVGPaintBucket(props: { color: string }) {
   )
 }
 
-function SVGPaintHouse(props: { color: string }) {
+function SVGOrderItem(props: { color: string }) {
   const { colorMode } = useColorMode()
 
   let stroke = props.color == 'black' ? 'lightgray' : 'black';
@@ -46,44 +48,67 @@ function SVGPaintHouse(props: { color: string }) {
  * 
  * @param color the paint color
  */
-function Note(props: { color: string, icon: React.ReactElement<typeof SVGPaintBucket | typeof SVGPaintHouse> }) {
+function Note(props: {
+  id: number,
+  title: string, desc: string, color: string,
+  icon: React.ReactElement<typeof SVGPaintBucket | typeof SVGOrderItem>
+}) {
   return (
     <Card mb='5'
       boxShadow='4px 4px 5px 2px rgba(0,0,0,0.2)'
       border="1px rgb(226, 232, 240) solid"
 
       // Custom attr hook for storing drag&drop information across columns
-      attr-color={props.color}>
+      attr-dataid={props.id}>
 
       {/* Heading text: where user can click and drag */}
       <CardHeader className='card-handle' display='flex'>
         <Box flex='0' minWidth='40px'>
           <Icon w={5} h={5} as={GrDrag} />
         </Box>
-        <Heading flex='2' size='md'>{props.color}</Heading>
+        <Heading flex='2' size='md'>{props.title}</Heading>
       </CardHeader>
 
       {/* Note body content */}
       <CardBody>
         <Flex justifyContent='space-between'>
-          <Text>{props.color}</Text>
-          <SVGPaintBucket color={props.color} />
+          <Text>{props.desc}</Text>
+          {props.icon}
         </Flex>
       </CardBody>
     </Card>
   )
 }
 
+function PaintBucket(props: { data: IPaint }) {
+  const color = `#${props.data.color_code}`
+  return <Note id={props.data.id} title={props.data.title}
+    desc={props.data.desc}
+    color={color}
+    icon={<SVGPaintBucket color={color} />} />
+}
+
+function PaintOrder(props: { data: IOrder }) {
+  const color = `#ffff`
+  return <Note id={props.data.id} title={props.data.title}
+    desc={props.data.address}
+    color={color}
+    icon={<SVGOrderItem color={color} />} />
+}
+
 /**
  * Kanban board columns
  * @param listGroup important to prevent drag&drop between different board columns 
  */
-function KanbanColumn(props: { title: string, items: any[], listGroup: string }) {
+function KanbanColumn(props: {
+  title: string, type: 'paint' | 'order',
+  column: number, items: (IPaint | IOrder)[], listGroup: string
+}) {
   const [state, setState] = React.useState<any[]>(props.items);
 
   return (
     <Box w='100%' h='100%'>
-      <Text>{props.title}</Text>
+      <Text fontSize='larger' fontWeight='bold'>{props.title}</Text>
 
       {/* Integrating Sortable API */}
       <ReactSortable
@@ -94,12 +119,28 @@ function KanbanColumn(props: { title: string, items: any[], listGroup: string })
 
         // Enable cross columns drag&drop
         onAdd={(evt) => {
-          console.log(`${props.title}: ${evt.item.getAttribute('attr-color')}`)
+          const attr = evt.item.getAttribute('attr-dataid')
+          if (attr) {
+            const itemID = parseInt(attr);
+            const tracker = {
+              begin: () => DataLoaderOp.showLoading(),
+              end: () => DataLoaderOp.showCompleted(),
+            }
+
+            if (props.type == 'paint') {
+              BE.updatePaintStatus(itemID, props.column, tracker)
+            }
+            else {
+              BE.updateOrderStatus(itemID, props.column, tracker)
+            }
+          }
         }}>
 
         {/* The sticky note elements */}
         {state.map((item) => (
-          <Note key={item.id} color={item.color} icon={<SVGPaintBucket color={item.color} />} />
+          props.type == 'paint'
+            ? <PaintBucket key={item.id} data={item} />
+            : <PaintOrder key={item.id} data={item} />
         ))}
       </ReactSortable>
     </Box>
@@ -111,7 +152,7 @@ function KanbanColumn(props: { title: string, items: any[], listGroup: string })
  * 
  * @param headerButtons? put 'Add New Thing' button here 
  */
-function KanbanBoard(props: { title: string, headerButtons?: React.ReactNode }) {
+function KanbanBoard(props: { title: string, type: 'paint' | 'order', data: (IPaint | IOrder)[], headerButtons?: React.ReactNode }) {
 
   /*
   Generate drag&drop group name from the title, the content of group name is not important. 
@@ -135,21 +176,16 @@ function KanbanBoard(props: { title: string, headerButtons?: React.ReactNode }) 
       <Flex className='kanban-board' dir='row' gap='5'>
 
         {/* Column 1: Available */}
-        <KanbanColumn title='Available' listGroup={listGroup} items={[
-          { id: 1, color: "blue" },
-          { id: 2, color: "grey" },
-          { id: 3, color: "white" },
-        ]} />
+        <KanbanColumn title='Available' column={PaintStatus.Available} type={props.type} listGroup={listGroup}
+          items={props.data.filter(a => a.status == PaintStatus.Available)} />
 
         {/* Column 2: Running Low */}
-        <KanbanColumn title='Running Low' listGroup={listGroup} items={[
-          { id: 4, color: "purple" },
-        ]} />
+        <KanbanColumn title='Running Low' column={PaintStatus.RunningLow} type={props.type} listGroup={listGroup}
+          items={props.data.filter(a => a.status == PaintStatus.RunningLow)} />
 
         {/* Column 3: Out of Stock */}
-        <KanbanColumn title='Out of Stock' listGroup={listGroup} items={[
-          { id: 5, color: "black" },
-        ]} />
+        <KanbanColumn title='Out of Stock' column={PaintStatus.OutOfStock} type={props.type} listGroup={listGroup}
+          items={props.data.filter(a => a.status == PaintStatus.OutOfStock)} />
       </Flex>
     </Box>
   )
@@ -159,19 +195,52 @@ function KanbanBoard(props: { title: string, headerButtons?: React.ReactNode }) 
  * The home page component
  */
 export default function KanbanBoardPage() {
+
+  const [isReady, setReady] = React.useState(false)
+  const [data, setData] = React.useState({ paints: [] as IPaint[], orders: [] as IOrder[] })
+
+  // on mounted: fetching data from server
+  React.useEffect(() => {
+    BE.getPaintStocks().then((resp) => {
+      setReady(true);
+      setData(resp);
+    })
+  }, [])
+
   function Separator() {
     return <hr style={{ width: '33%' }} />
   }
 
-  return (
-    <PageTemplate>
-      {/* Board 1: the paint stock showing the quality of paints in inventory */}
-      <KanbanBoard title="Paint Stock" headerButtons={<Button leftIcon={<MdOutlineAdd />} colorScheme="green">Add new paint</Button>} />
+  return isReady
+    ? (
+      <PageTemplate>
+        {/* Board 1: the paint stock showing the quality of paints in inventory */}
+        <KanbanBoard title="Paint Stock" type='paint' data={data.paints}
+          headerButtons={
+            <Button leftIcon={<MdOutlineAdd />} colorScheme="green">
+              Add new paint
+            </Button>
+          } />
 
-      {/* Board 2: the paint orders: houses and painting progress */}
-      <Separator />
-      <KanbanBoard title="Orders" headerButtons={<Button leftIcon={<MdOutlineAdd />} colorScheme="green">Add new order</Button>} />
+        {/* Board 2: the paint orders: houses and painting progress */}
+        <Separator />
 
-    </PageTemplate>
-  );
+        <KanbanBoard title="Orders" type='order' data={data.orders}
+          headerButtons={
+            <Button leftIcon={<MdOutlineAdd />} colorScheme="green">
+              Add new order
+            </Button>} />
+
+      </PageTemplate>
+    )
+    : (
+      <PageTemplate>
+        <Box w='350px' m='auto' mt='5rem'>
+          <Box ml='100px'>
+            <GridLoader color='lightgreen' />
+          </Box>
+          <Text fontSize='md'>Loading data, please wait for a moment</Text>
+        </Box>
+      </PageTemplate>
+    )
 }

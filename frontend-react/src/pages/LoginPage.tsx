@@ -4,6 +4,8 @@ import { Field, Form, Formik } from 'formik';
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import React from "react";
+import BE from '../model/Backend'
+import AlertDialogRef from "../component/AlertDialog";
 
 /**
  * Login from using Formik for easy from validation
@@ -29,23 +31,25 @@ function LoginForm() {
     }
 
     function handleSubmit(values: any, actions: any) {
-        debugger
-        axios.post('/api/auth/login', {
-            email: values.email,
-            password: values.password,
-        })
-            .then(() => {
-                // successfull, redirect to the homepage
-                nav('/')
+        BE.login(values.email, values.password,
+            {
+                thenFn: (session) => {
+                    // successfull, redirect to the homepage
+                    if (session) {
+                        AlertDialogRef.showToast(`Welcome back, ${session.name}!`)
+                    }
+
+                    nav('/')
+                },
+                catchFn: () => {
+                    // login error
+                    setErrorMsg('Incorrect email or password')
+                },
+                finallyFn: () => {
+                    // stop spining the buttons
+                    actions.setSubmitting(false)
+                }
             })
-            .catch(() => {
-                // login error
-                setErrorMsg('Incorrect email or password')
-            })
-            .finally(() => {
-                // stop spining the buttons
-                actions.setSubmitting(false)
-            });
     }
 
     return (

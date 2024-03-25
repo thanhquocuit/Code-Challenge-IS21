@@ -1,12 +1,15 @@
 import { As, Box, BoxProps, Button, Flex, HStack, Heading, Icon, IconButton, Input, InputGroup, InputRightElement, Menu, MenuButton, MenuDivider, MenuItem, MenuList, Stack, Text, Tooltip, useColorMode } from "@chakra-ui/react";
 import React from "react";
 import { FaBars, FaEye, FaList, FaPaintRoller, FaSearch, FaSignOutAlt } from "react-icons/fa";
-import { FaBoxOpen } from "react-icons/fa6";
+import { FaBoxOpen, FaCheck } from "react-icons/fa6";
 import { MdDarkMode, MdLabel, MdLightMode } from "react-icons/md";
 import { Link, ScrollRestoration, useNavigate } from "react-router-dom";
 import ImgPaintBrush from '../static/paint_brush.png';
 import ImgPaintDrops from '../static/paint_drops.png';
 import { UIAvatar } from "./ElementUtils";
+import BE, { useSession } from "../model/Backend";
+import AlertDialogRef from "./AlertDialog";
+import { SyncLoader } from "react-spinners";
 
 function MenuToggler(props: { onToggle: (expand: boolean) => void }) {
     const [expanded, setExpanded] = React.useState(false);
@@ -40,6 +43,35 @@ function SearchBar(props: BoxProps) {
     )
 }
 
+const DataLoaderRef = React.createRef<any>()
+export const DataLoaderOp = {
+    showLoading: () => DataLoaderRef.current && DataLoaderRef.current.showLoading(),
+    showCompleted: () => DataLoaderRef.current && DataLoaderRef.current.showCompleted(),
+}
+
+function DataLoader() {
+    const Elm = React.forwardRef((_props: any, ref) => {
+        const [state, setState] = React.useState('');
+
+        const showLoading = React.useCallback(() => setState('loading'), []);
+        const showCompleted = React.useCallback(() => setTimeout(() => setState('completed'), 800), []);
+
+        React.useImperativeHandle(ref, () => ({ showLoading, showCompleted }), [
+            showLoading,
+            showCompleted,
+        ]);
+
+        return state == 'loading'
+            ? <SyncLoader size='8px' color="lightgreen" />
+            : (state == 'completed'
+                ? <Icon as={FaCheck} color="lightgreen" w='22px' />
+                : <></>
+            )
+    })
+
+    return <Elm ref={DataLoaderRef} />
+}
+
 export function ThemeToggler() {
     const { toggleColorMode, colorMode } = useColorMode();
 
@@ -53,28 +85,40 @@ export function ThemeToggler() {
 }
 
 function AvatarIcon() {
+    const nav = useNavigate()
+    const session = useSession()
+
+    function getInitialName() {
+        if (session.name.length > 2) return session.name.substring(0, 2).toUpperCase();
+        else return session.name || 'CA'
+    }
+
     return (
         <Menu>
             {({ isOpen }) => (
                 <>
-                    <Tooltip label="Hey, Hello Quoc" aria-label='A tooltip'>
+                    <Tooltip label={`Hey, ${session.name}`} aria-label='A tooltip'>
                         <MenuButton
                             isActive={isOpen}
                             as={Button}
                             className="avatar-btn"
                         >
-                            <UIAvatar initial='TH' size={40} bgColor="none" textColor="white" />
+                            <UIAvatar initial={getInitialName()} size={40} bgColor="none" textColor="white" />
                         </MenuButton>
                     </Tooltip>
                     <MenuList>
                         <MenuItem isDisabled={true} className="MenuItem-text">
-                            Hi, Quoc
+                            Hi, {session.name}
                         </MenuItem>
                         <MenuDivider />
                         <MenuItem icon={<FaEye />}>View Profile</MenuItem>
                         <MenuItem
                             icon={<FaSignOutAlt />}
-                            onClick={() => { }}
+                            onClick={() => {
+                                BE.logout();
+                                AlertDialogRef.showToast(`Logout successful.`)
+                                nav('/login')
+                            }}
                         >
                             Sign Out
                         </MenuItem>
@@ -97,6 +141,7 @@ function Header(props: { onToggleLeftBar: (expand: boolean) => void }) {
 
             {/** Right side */}
             <HStack flex='1' justifyContent='end'>
+                <DataLoader />
                 <ThemeToggler />
                 <AvatarIcon />
             </HStack>

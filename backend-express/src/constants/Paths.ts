@@ -5,14 +5,17 @@
 
 export default {
   Base: '/api',
+  Session: '/session',
   Auth: {
     Base: '/auth',
     Login: '/login',
     Logout: '/logout',
   },
   PaintStock: {
-    Base: '/paints',
+    Base: '/stock',
     Get: '/all',
+    UpdatePaint: '/update-paint',
+    UpdateOrder: '/update-order',
   },
   Users: {
     Base: '/users',

@@ -5,7 +5,7 @@
 export interface IPaint {
     id: number;
     title: string;
-    color_color: string;
+    color_code: string;
     desc: string;
     status: number;
     quantity: number;

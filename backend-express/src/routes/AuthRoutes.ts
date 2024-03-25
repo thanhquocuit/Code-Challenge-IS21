@@ -51,14 +51,16 @@ async function login(req: IReq<ILoginReq>, res: IRes) {
   }
 
   // Setup Admin Cookie
-  await SessionUtil.addSessionData(res, {
+  const session = {
     id: user.id,
     email: user.name,
     name: user.name,
     role: user.role,
-  });
+  }
+  await SessionUtil.addSessionData(res, session);
+
   // Return
-  return res.status(HttpStatusCodes.OK).end();
+  return res.status(HttpStatusCodes.OK).json(session);
 }
 
 /**
