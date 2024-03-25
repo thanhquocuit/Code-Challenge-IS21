@@ -1,4 +1,4 @@
-import { IUser } from '@src/models/User';
+import { IUser } from '@src/models/UserRepo';
 import Db from '@src/repos/SQLiteORM';
 
 /**

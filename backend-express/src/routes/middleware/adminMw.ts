@@ -8,7 +8,7 @@ import { JwtPayload } from 'jsonwebtoken';
 import HttpStatusCodes from '@src/constants/HttpStatusCodes';
 
 import SessionUtil from '@src/util/SessionUtil';
-import { ISessionUser, UserRoles } from '@src/models/User';
+import { ISessionUser, UserRoles } from '@src/models/UserRepo';
 
 
 // **** Types **** //
@@ -16,6 +16,29 @@ import { ISessionUser, UserRoles } from '@src/models/User';
 type TSessionData = ISessionUser & JwtPayload;
 
 // **** Functions **** //
+
+function currentSession(req: Request, res: Response) {
+  return new Promise<any>((rs) => {
+    // Get session data
+    let sessionData = {} as any
+    let isLogin = false;
+
+    SessionUtil.getSessionData<TSessionData>(req)
+      .then((session) => {
+        sessionData = session
+        delete sessionData.iat;
+        delete sessionData.exp;
+
+        isLogin = true;
+      })
+      .catch(() => {
+        isLogin = false;
+      })
+      .finally(() => {
+        rs(res.json({ isLogin, sessionData }))
+      })
+  })
+}
 
 /**
  * Verify user logged in
@@ -67,4 +90,4 @@ async function adminMw(
 
 // **** Export Default **** //
 
-export default { adminMw, userMw } as const;
+export default { currentSession, adminMw, userMw } as const;

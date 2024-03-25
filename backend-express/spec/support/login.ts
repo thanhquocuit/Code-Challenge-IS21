@@ -1,6 +1,6 @@
 import { SuperTest, Test, Response } from 'supertest';
 
-import User, { UserRoles } from '@src/models/User';
+import User, { UserRoles } from '@src/models/UserRepo';
 import UserRepo from '@src/repos/UserRepo';
 import PwdUtil from '@src/util/PwdUtil';
 

@@ -1,7 +1,7 @@
 import HttpStatusCodes from '@src/constants/HttpStatusCodes';
 
 import UserRepo from '@src/repos/UserRepo';
-import { IUser } from '@src/models/User';
+import { IUser } from '@src/models/UserRepo';
 import { IReq, IRes } from './types/express/misc';
 import { RouteError } from '@src/other/classes';
 
