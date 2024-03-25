@@ -13,6 +13,8 @@ import { GridLoader } from 'react-spinners';
 import PageTemplate, { DataLoaderOp, useSearchBar } from '../component/PageTemplate';
 import BE, { IOrder, IPaint, PaintStatus } from '../model/Backend';
 import { useLocation } from 'react-router-dom';
+import { PaintCreateDrawer } from '../component/PaintCreateDrawer';
+import { OrderCreateDrawer } from '../component/OrderCreateDrawer';
 
 
 function SVGPaintBucket(props: { color: string }) {
@@ -206,7 +208,7 @@ function KanbanColumn(props: {
 
   return (
     <Box className='kanban-column' w='100%' h='100%' >
-      <Text fontSize='x-large' fontWeight='bold'>{props.title}</Text>
+      <Text fontSize='x-large' fontWeight='bold' color='purple'>{props.title}</Text>
 
       {/* Integrating Sortable API */}
       <ReactSortable
@@ -278,7 +280,7 @@ function KanbanBoard(props: {
       <Stack justifyContent='space-between' direction={{ sm: 'column', lg: 'row' }}>
         <Box mb={5}>
           <Icon as={FaList} display='inline-block' mr='3' mb='3' fontSize='x-large' color='gray' />
-          <Heading size='lg' display='inline-block'>Sorting by {props.title}</Heading>
+          <Heading size='lg' display='inline-block' color='purple'>Sorting by {props.title}</Heading>
         </Box>
         <Box my={{ sm: '5', lg: '0' }} alignItems='end'>{props.headerButtons}</Box>
       </Stack>
@@ -337,24 +339,17 @@ export default function KanbanBoardPage() {
   if (isReady) {
 
     /* Board 1: the paint stock showing the quality of paints in inventory */
-    const paintBoard = <KanbanBoard
+    const paintBoard = <KanbanBoard key='0'
       title="Paint Stock" columns={['Available', 'Running Low', 'Out of Stock']} type='paint' data={filterBySearch(data.paints)}
-      headerButtons={
-        <Button leftIcon={<MdOutlineAdd />} colorScheme="green">
-          Add new paint
-        </Button>
-      } />
+      headerButtons={<PaintCreateDrawer />} />
 
     /* Board 2: the paint orders: houses and painting progress */
-    const orderBoard = <KanbanBoard title="Orders" columns={['Waiting', 'Painting', 'Completed']} type='order' data={filterBySearch(data.orders)}
-      headerButtons={
-        <Button leftIcon={<MdOutlineAdd />} colorScheme="green">
-          Add new order
-        </Button>} />
+    const orderBoard = <KanbanBoard key='1' title="Orders" columns={['Waiting', 'Painting', 'Completed']} type='order' data={filterBySearch(data.orders)}
+      headerButtons={<OrderCreateDrawer />} />
 
-    let element = [paintBoard, <Separator />, orderBoard]
+    let element = [paintBoard, <Separator key='s' />, orderBoard]
     if (location.hash == '#orders') {
-      element = [orderBoard, <Separator />, paintBoard]
+      element = [orderBoard, <Separator key='s' />, paintBoard]
     }
     return <PageTemplate>{element}</PageTemplate>
   }

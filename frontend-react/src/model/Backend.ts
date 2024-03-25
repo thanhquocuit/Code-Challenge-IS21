@@ -112,6 +112,10 @@ async function getPaintStocks() {
     return Cached.stock;
 }
 
+function getStocksCache() {
+    return Cached.stock
+}
+
 async function updatePaintStatus(itemID: number, status: number, tracker: ProgressTracker) {
     tracker.begin();
 
@@ -132,6 +136,35 @@ async function updateOrderStatus(itemID: number, status: number, tracker: Progre
         await axios.put('/api/stock/update-order', { data });
     }
     tracker.end();
+}
+
+async function createPaint(title: string, color_code: string, desc: string, quantity: number, tracker: ProgressTracker) {
+    tracker.begin();
+
+    const data = { id: 0, title, color_code, desc, status: 0, quantity }
+    const reps = await axios.post('/api/stock/add-paint', { data });
+    if (reps.data?.error) {
+        tracker.end(reps.data.error);
+    }
+    else if (reps.data?.paints) {
+        Cached.stock.paints = reps.data.paints
+        tracker.end();
+    }
+}
+
+async function createOrder(title: string, address: string, paint_color: number, tracker: ProgressTracker) {
+    tracker.begin();
+
+    const now = Math.trunc(new Date().getTime() / 1000.0)
+    const data = { id: 0, title, address, paint_color, status: 0, created_date: now, completed_date: 0, completed_by: '' }
+    const reps = await axios.post('/api/stock/add-order', { data });
+    if (reps.data?.error) {
+        tracker.end(reps.data.error);
+    }
+    else if (reps.data?.orders) {
+        Cached.stock.orders = reps.data.orders
+        tracker.end();
+    }
 }
 
 async function getUsers() {
@@ -203,8 +236,11 @@ export default {
     // data API
     dataListeners,
     getPaintStocks,
+    getStocksCache,
     updatePaintStatus,
     updateOrderStatus,
+    createPaint,
+    createOrder,
 
     // system admin
     getUsers,

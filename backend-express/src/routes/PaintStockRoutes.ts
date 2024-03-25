@@ -26,6 +26,21 @@ async function updateOrder(req: IReq<{ data: IOrder }>, res: IRes) {
     return res.status(HttpStatusCodes.OK).json();
 }
 
+async function addPaint(req: IReq<{ data: IPaint }>, res: IRes) {
+    await PaintStockRepo.addPaint(req.body.data)
+
+    const paints = await PaintStockRepo.getAllPaints()
+    return res.status(HttpStatusCodes.OK).json({ paints });
+}
+
+async function addOrder(req: IReq<{ data: IOrder }>, res: IRes) {
+    await PaintStockRepo.addOrder(req.body.data)
+
+    const orders = await PaintStockRepo.getAllOrders()
+    return res.status(HttpStatusCodes.OK).json({ orders });
+}
+
+
 /**
  * See if the param meets criteria to be a paint item.
  */
@@ -60,6 +75,8 @@ export default {
     getAll,
     updatePaint,
     updateOrder,
+    addPaint,
+    addOrder,
     isPaintItem,
     isOrderItem
 } as const

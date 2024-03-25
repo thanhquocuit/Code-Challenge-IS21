@@ -2,15 +2,15 @@
  * System admin page
  */
 
-import { Alert, AlertIcon, AlertTitle, Box, Button, ButtonGroup, Card, CardBody, CardFooter, CardHeader, Drawer, DrawerBody, DrawerCloseButton, DrawerContent, DrawerFooter, DrawerHeader, DrawerOverlay, FormControl, FormErrorMessage, FormLabel, Grid, GridItem, IconButton, Input, Menu, MenuButton, MenuItem, MenuList, Select, Stack, Text, Textarea, Tooltip, useColorMode, useDisclosure } from "@chakra-ui/react";
-import { FaChevronDown, FaEdit, FaTrash } from "react-icons/fa";
-import { MdOutlineAdd, MdOutlinePersonAddDisabled } from "react-icons/md";
-import PageTemplate, { DataLoaderOp, PageHeading } from "../component/PageTemplate";
-import React from "react";
-import BE, { IUser, UserRoles } from '../model/Backend';
-import { GridLoader } from "react-spinners";
+import { Alert, AlertIcon, AlertTitle, Box, Button, ButtonGroup, Card, CardBody, CardFooter, CardHeader, Drawer, DrawerBody, DrawerCloseButton, DrawerContent, DrawerFooter, DrawerHeader, DrawerOverlay, FormControl, FormErrorMessage, FormLabel, Grid, GridItem, IconButton, Input, Menu, MenuButton, MenuItem, MenuList, Select, Stack, Text, Tooltip, useColorMode, useDisclosure } from "@chakra-ui/react";
 import { Field, Form, Formik } from "formik";
+import React from "react";
+import { FaChevronDown, FaEdit } from "react-icons/fa";
+import { MdOutlineAdd, MdOutlinePersonAddDisabled } from "react-icons/md";
+import { GridLoader } from "react-spinners";
 import AlertDialogRef from "../component/AlertDialog";
+import PageTemplate, { DataLoaderOp, PageHeading } from "../component/PageTemplate";
+import BE, { IUser, UserRoles } from '../model/Backend';
 
 /**
  * Component for showing user information

@@ -32,7 +32,7 @@ export function AppIcon(props: { to: string }) {
         <Box cursor='pointer' w='' display={{ sm: 'none', lg: 'block' }}>
             <Link to={props.to}>
                 <img className="header-icon" src="/logo64.png" alt="paint stock icon" />
-                <Heading float='right' size='lg' pt='5px' pl='1' mb='0' fontStyle='italic'>My Paint Stock</Heading>
+                <Heading float='right' size='lg' pt='5px' pl='1' mb='0' fontStyle='italic' color='purple'>My Paint Stock</Heading>
             </Link>
         </Box>
     )
@@ -147,8 +147,6 @@ function AvatarIcon() {
 function AvatarMenu() {
     const nav = useNavigate()
     const session = useSession()
-
-
 
     return (
         <Menu>

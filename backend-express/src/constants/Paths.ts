@@ -16,6 +16,8 @@ export default {
     Get: '/all',
     UpdatePaint: '/update-paint',
     UpdateOrder: '/update-order',
+    AddPaint: '/add-paint',
+    AddOrder: '/add-order',
   },
   Users: {
     Base: '/users',

@@ -56,6 +56,18 @@ paintStockRouter.put(
   PaintStockRoutes.updateOrder,
 );
 
+paintStockRouter.post(
+  Paths.PaintStock.AddPaint,
+  validate(['data', PaintStockRoutes.isPaintItem]),
+  PaintStockRoutes.addPaint,
+);
+
+paintStockRouter.post(
+  Paths.PaintStock.AddOrder,
+  validate(['data', PaintStockRoutes.isOrderItem]),
+  PaintStockRoutes.addOrder,
+);
+
 // Add PaintStockRoutes
 apiRouter.use(
   Paths.PaintStock.Base,
