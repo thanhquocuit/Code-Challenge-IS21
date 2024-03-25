@@ -72,13 +72,19 @@ app.use((
 // ** Front-End Content ** //
 
 // Set views directory (html)
-const viewsDir = path.join(__dirname, 'views');
+const viewsDir = EnvVars.ReactBuild || path.join(__dirname, 'views')
 app.set('views', viewsDir);
 
 // Set static directory (js and css).
-const staticDir = path.join(__dirname, 'public');
+const staticDir = EnvVars.ReactBuild || path.join(__dirname, 'public');
 app.use(express.static(staticDir));
 
+// Nav to react hook page
+app.get('/', (_: Request, res: Response) => {
+  res.sendFile('index.html', { root: viewsDir });
+});
+
+/*
 // Nav to login pg by default
 app.get('/', (_: Request, res: Response) => {
   res.sendFile('login.html', { root: viewsDir });
@@ -93,6 +99,7 @@ app.get('/users', (req: Request, res: Response) => {
     res.sendFile('users.html', { root: viewsDir });
   }
 });
+*/
 
 
 // **** Export default **** //
