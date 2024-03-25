@@ -50,7 +50,12 @@ const router = createBrowserRouter([
 
   {
     path: "/admin",
-    loader: Backend.isAdmin, // With login and admin role required
+    loader: async () => {
+      let ok = await Backend.isLogin()
+      if (!ok || !Backend.isAdmin()) return redirect('/login') // With login and admin role required
+
+      return null // allow to access
+    },
     element: <AdminPage />,
   },
 

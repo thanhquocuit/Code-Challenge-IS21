@@ -43,7 +43,7 @@ Main page styles across the app
         top: 64px;
         z-index: 999;
         width: 64px;
-        height: 100vh;
+        height: calc(100vh - 64px);
         border-right: 1px rgb(226, 232, 240) solid;
         transition: all linear 0.1s;
         background-color: white;
@@ -152,5 +152,16 @@ Main page styles across the app
 
     .chakra-toast {
         color: unset;
+    }
+}
+
+/* Responsive layout */
+@media screen and (max-width: 768px) {
+    .page-content {
+        .right-content {
+            &.menu-expanded {
+                margin-left: 64px;
+            }
+        }
     }
 }

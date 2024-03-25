@@ -1,6 +1,6 @@
 import { As, Box, BoxProps, Button, Flex, HStack, Heading, Icon, IconButton, Input, InputGroup, InputRightElement, Menu, MenuButton, MenuDivider, MenuItem, MenuList, Stack, Text, Tooltip, useColorMode } from "@chakra-ui/react";
 import React from "react";
-import { FaBars, FaEye, FaList, FaPaintRoller, FaSearch, FaSignOutAlt } from "react-icons/fa";
+import { FaBars, FaEye, FaList, FaPaintRoller, FaSearch, FaSignOutAlt, FaUser } from "react-icons/fa";
 import { FaBoxOpen, FaCheck } from "react-icons/fa6";
 import { MdDarkMode, MdLabel, MdLightMode } from "react-icons/md";
 import { Link, ScrollRestoration, useNavigate } from "react-router-dom";
@@ -11,6 +11,9 @@ import BE, { useSession } from "../model/Backend";
 import AlertDialogRef from "./AlertDialog";
 import { SyncLoader } from "react-spinners";
 
+/**
+ * Located at top left of the header, use to toggling the menu panel
+ */
 function MenuToggler(props: { onToggle: (expand: boolean) => void }) {
     const [expanded, setExpanded] = React.useState(false);
 
@@ -21,17 +24,23 @@ function MenuToggler(props: { onToggle: (expand: boolean) => void }) {
     }} />
 }
 
+/**
+ * App logo and icon
+ */
 export function AppIcon(props: { to: string }) {
     return (
-        <Link to={props.to}>
-            <Box cursor='pointer' w=''>
+        <Box cursor='pointer' w='' display={{ sm: 'none', lg: 'block' }}>
+            <Link to={props.to}>
                 <img className="header-icon" src="/logo64.png" alt="paint stock icon" />
                 <Heading float='right' size='lg' pt='5px' pl='1' mb='0' fontStyle='italic'>My Paint Stock</Heading>
-            </Box>
-        </Link>
+            </Link>
+        </Box>
     )
 }
 
+/**
+ * Header searching bar
+ */
 function SearchBar(props: BoxProps) {
     return (
         <InputGroup {...props} >
@@ -49,6 +58,9 @@ export const DataLoaderOp = {
     showCompleted: () => DataLoaderRef.current && DataLoaderRef.current.showCompleted(),
 }
 
+/**
+ * Small icon component to render current data fetchin progress
+ */
 function DataLoader() {
     const Elm = React.forwardRef((_props: any, ref) => {
         const [state, setState] = React.useState('');
@@ -72,6 +84,9 @@ function DataLoader() {
     return <Elm ref={DataLoaderRef} />
 }
 
+/**
+ * Button to toggle theme across the app
+ */
 export function ThemeToggler() {
     const { toggleColorMode, colorMode } = useColorMode();
 
@@ -84,14 +99,24 @@ export function ThemeToggler() {
     )
 }
 
+/** 
+ * Component to render avatar icon of login user
+*/
 function AvatarIcon() {
-    const nav = useNavigate()
     const session = useSession()
 
     function getInitialName() {
         if (session.name.length > 2) return session.name.substring(0, 2).toUpperCase();
         else return session.name || 'CA'
     }
+
+    return <UIAvatar initial={getInitialName()} size={40} bgColor="none" textColor="white" />
+}
+function AvatarMenu() {
+    const nav = useNavigate()
+    const session = useSession()
+
+
 
     return (
         <Menu>
@@ -103,7 +128,7 @@ function AvatarIcon() {
                             as={Button}
                             className="avatar-btn"
                         >
-                            <UIAvatar initial={getInitialName()} size={40} bgColor="none" textColor="white" />
+                            <AvatarIcon />
                         </MenuButton>
                     </Tooltip>
                     <MenuList>
@@ -111,7 +136,9 @@ function AvatarIcon() {
                             Hi, {session.name}
                         </MenuItem>
                         <MenuDivider />
-                        <MenuItem icon={<FaEye />}>View Profile</MenuItem>
+                        <MenuItem icon={<FaEye />} onClick={() => {
+                            AlertDialogRef.showMessage('Feature has not immplemented yet')
+                        }}>View Profile</MenuItem>
                         <MenuItem
                             icon={<FaSignOutAlt />}
                             onClick={() => {
@@ -129,6 +156,9 @@ function AvatarIcon() {
     )
 }
 
+/**
+ * Main Header
+ */
 function Header(props: { onToggleLeftBar: (expand: boolean) => void }) {
     return <div className="page-header">
         <Flex justifyContent='space-between'>
@@ -140,38 +170,52 @@ function Header(props: { onToggleLeftBar: (expand: boolean) => void }) {
             </HStack>
 
             {/** Right side */}
-            <HStack flex='1' justifyContent='end'>
+            <HStack flex='1' justifyContent='end' maxW={{ sm: '50px', lg: 'unset' }}>
                 <DataLoader />
-                <ThemeToggler />
-                <AvatarIcon />
+                <Box display={{ sm: 'none', lg: 'block' }}><ThemeToggler /></Box>
+                <Box display={{ sm: 'none', lg: 'block' }}><AvatarMenu /></Box>
             </HStack>
         </Flex>
     </div>
 }
 
+/**
+ * Main Footer
+ */
 function Footer() {
     return <div className="page-footer">
         <Text float='right' m='5'>@ThanhQuoc, 2024</Text>
     </div>
 }
 
+/**
+ * 
+ * @param isMenuExpanded force the menu in expanded mode or not 
+ * @returns 
+ */
 function MainMenu(props: { className: string, isMenuExpanded: boolean }) {
+    const nav = useNavigate();
 
     const [menuState, setMenuState] = React.useState(props.isMenuExpanded)
     React.useEffect(() => {
         setMenuState(props.isMenuExpanded)
     }, [props.isMenuExpanded])
 
+    /*
+    Auto expand menu when mouse is hover on
+     */
     const handlePointerEnter = React.useCallback(() => {
         if (props.isMenuExpanded) return;
         setMenuState(true)
     }, [props.isMenuExpanded])
 
+    // Hide when mouse is hover out
     const handlePointerLeave = React.useCallback(() => {
         if (props.isMenuExpanded) return;
         setMenuState(false)
     }, [props.isMenuExpanded])
 
+    // Menu items
     function Item(itemProps: PropsWithChildren<{ icon: As, to: string }>) {
         return (
             <Link to={itemProps.to}>
@@ -185,11 +229,37 @@ function MainMenu(props: { className: string, isMenuExpanded: boolean }) {
     }
 
     return (
-        <Flex className={`${props.className} ${menuState ? 'expanded' : ''}`} direction='column' pt='5'
+        <Flex className={`${props.className} ${menuState ? 'expanded' : ''}`}
+            direction='column' pt='5' justifyContent='space-between'
             onPointerEnter={handlePointerEnter} onPointerLeave={handlePointerLeave}>
-            <Item icon={FaPaintRoller} to='/#orders'>Orders</Item>
-            <Item icon={FaBoxOpen} to='/#stock'>Stocks</Item>
-            <Item icon={MdLabel} to='/?label=custom'>Custom labels</Item>
+            <Flex direction='column'>
+                {/* System admin menu, available to admin only */}
+                {BE.isAdmin() &&
+                    <Box >
+                        <Item icon={FaUser} to='/admin'>System Admin</Item>
+                    </Box>}
+
+                {/* organize note by category */}
+                <Item icon={FaPaintRoller} to='/#orders'>Orders</Item>
+                <Item icon={FaBoxOpen} to='/#stock'>Stocks</Item>
+                <Item icon={MdLabel} to='/?label=custom'>Custom labels</Item>
+            </Flex>
+
+            {/* Second menu item for repsonsive layout */}
+            <Flex direction='column' display={{ sm: 'flex', lg: 'none' }}>
+                <Stack className="item" direction='row' m='1' pr='5' mr='5' py='2'>
+                    <Button bgColor='var(--app-purple)' ml='2'>
+                        <AvatarIcon />
+                    </Button>
+                </Stack>
+                <Stack className="item" direction='row' m='1' pr='5' mr='5' py='2'>
+                    <Icon className="icon" fontSize='2rem' as={FaSignOutAlt} mt='1' onClick={() => {
+                        BE.logout();
+                        AlertDialogRef.showToast(`Logout successful.`)
+                        nav('/login')
+                    }} />
+                </Stack>
+            </Flex>
         </Flex>
     )
 }

@@ -68,9 +68,8 @@ async function isLogin() {
     return Cached.session.email && Cached.session.id >= 0
 }
 
-async function isAdmin() {
-    await acquireSession();
-    return Cached.session.email && Cached.session.id >= 0 && Cached.session.role == UserRoles.Admin
+function isAdmin() {
+    return Cached.sessionLoaded && Cached.session.email && Cached.session.id >= 0 && Cached.session.role == UserRoles.Admin
 }
 
 async function login(email: string, password: string, cb: {

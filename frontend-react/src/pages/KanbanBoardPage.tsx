@@ -2,7 +2,7 @@
  * Main home page: the kanban style board
  */
 
-import { Box, Button, Card, CardBody, CardHeader, Center, Flex, HStack, Heading, Icon, Text, useColorMode } from '@chakra-ui/react';
+import { Box, Button, Card, CardBody, CardHeader, Center, Flex, HStack, Heading, Icon, Stack, Text, useBreakpointValue, useColorMode } from '@chakra-ui/react';
 import React from 'react';
 import { FaList } from 'react-icons/fa';
 import { GrDrag } from "react-icons/gr";
@@ -152,7 +152,13 @@ function KanbanColumn(props: {
  * 
  * @param headerButtons? put 'Add New Thing' button here 
  */
-function KanbanBoard(props: { title: string, type: 'paint' | 'order', data: (IPaint | IOrder)[], headerButtons?: React.ReactNode }) {
+function KanbanBoard(props: {
+  title: string,
+  columns: [string, string, string],
+  type: 'paint' | 'order',
+  data: (IPaint | IOrder)[],
+  headerButtons?: React.ReactNode
+}) {
 
   /*
   Generate drag&drop group name from the title, the content of group name is not important. 
@@ -164,27 +170,27 @@ function KanbanBoard(props: { title: string, type: 'paint' | 'order', data: (IPa
     <Box w='100%'>
 
       {/* Heading text */}
-      <HStack justifyContent='space-between'>
+      <Stack justifyContent='space-between' direction={{ sm: 'column', lg: 'row' }}>
         <Box mb={5}>
           <Icon as={FaList} display='inline-block' mr='3' mb='3' fontSize='x-large' color='gray' />
           <Heading size='lg' display='inline-block'>Sorting by {props.title}</Heading>
         </Box>
-        {props.headerButtons}
-      </HStack>
+        <Box my={{ sm: '5', lg: '0' }} alignItems='end'>{props.headerButtons}</Box>
+      </Stack>
 
       {/** We are organizing the board with 3 columns: Available, Running Low and Out of Stock */}
-      <Flex className='kanban-board' dir='row' gap='5'>
+      <Flex className='kanban-board' direction={{ sm: 'column', lg: 'row' }} gap='5'>
 
         {/* Column 1: Available */}
-        <KanbanColumn title='Available' column={PaintStatus.Available} type={props.type} listGroup={listGroup}
+        <KanbanColumn title={props.columns[0]} column={PaintStatus.Available} type={props.type} listGroup={listGroup}
           items={props.data.filter(a => a.status == PaintStatus.Available)} />
 
         {/* Column 2: Running Low */}
-        <KanbanColumn title='Running Low' column={PaintStatus.RunningLow} type={props.type} listGroup={listGroup}
+        <KanbanColumn title={props.columns[1]} column={PaintStatus.RunningLow} type={props.type} listGroup={listGroup}
           items={props.data.filter(a => a.status == PaintStatus.RunningLow)} />
 
         {/* Column 3: Out of Stock */}
-        <KanbanColumn title='Out of Stock' column={PaintStatus.OutOfStock} type={props.type} listGroup={listGroup}
+        <KanbanColumn title={props.columns[2]} column={PaintStatus.OutOfStock} type={props.type} listGroup={listGroup}
           items={props.data.filter(a => a.status == PaintStatus.OutOfStock)} />
       </Flex>
     </Box>
@@ -208,14 +214,16 @@ export default function KanbanBoardPage() {
   }, [])
 
   function Separator() {
-    return <hr style={{ width: '33%' }} />
+    const width = useBreakpointValue({ base: '33%', sm: '90%', lg: '33%' })
+    return <hr style={{ width }} />
   }
 
   return isReady
     ? (
       <PageTemplate>
         {/* Board 1: the paint stock showing the quality of paints in inventory */}
-        <KanbanBoard title="Paint Stock" type='paint' data={data.paints}
+        <KanbanBoard
+          title="Paint Stock" columns={['Available', 'Running Low', 'Out of Stock']} type='paint' data={data.paints}
           headerButtons={
             <Button leftIcon={<MdOutlineAdd />} colorScheme="green">
               Add new paint
@@ -225,7 +233,7 @@ export default function KanbanBoardPage() {
         {/* Board 2: the paint orders: houses and painting progress */}
         <Separator />
 
-        <KanbanBoard title="Orders" type='order' data={data.orders}
+        <KanbanBoard title="Orders" columns={['Waiting', 'Painting', 'Completed']} type='order' data={data.orders}
           headerButtons={
             <Button leftIcon={<MdOutlineAdd />} colorScheme="green">
               Add new order
