@@ -80,7 +80,7 @@ const staticDir = EnvVars.ReactBuild || path.join(__dirname, 'public');
 app.use(express.static(staticDir));
 
 // Nav to react hook page
-app.get('/', (_: Request, res: Response) => {
+app.get('/*', (_: Request, res: Response) => {
   res.sendFile('index.html', { root: viewsDir });
 });
 
