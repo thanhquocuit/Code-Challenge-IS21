@@ -41,7 +41,7 @@ if (EnvVars.NodeEnv === NodeEnvs.Dev.valueOf()) {
 
 // Security
 if (EnvVars.NodeEnv === NodeEnvs.Production.valueOf()) {
-  app.use(helmet());
+  app.use(helmet({ contentSecurityPolicy: false }));
 }
 
 // ORM connection

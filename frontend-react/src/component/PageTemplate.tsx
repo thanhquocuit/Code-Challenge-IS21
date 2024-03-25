@@ -2,14 +2,14 @@ import { As, Box, BoxProps, Button, Flex, HStack, Heading, Icon, IconButton, Inp
 import React from "react";
 import { FaBars, FaEye, FaList, FaPaintRoller, FaSearch, FaSignOutAlt, FaUser } from "react-icons/fa";
 import { FaBoxOpen, FaCheck } from "react-icons/fa6";
-import { MdDarkMode, MdLabel, MdLightMode } from "react-icons/md";
+import { MdClear, MdDarkMode, MdLabel, MdLightMode } from "react-icons/md";
 import { Link, ScrollRestoration, useNavigate } from "react-router-dom";
+import { SyncLoader } from "react-spinners";
+import BE, { useSession } from "../model/Backend";
 import ImgPaintBrush from '../static/paint_brush.png';
 import ImgPaintDrops from '../static/paint_drops.png';
-import { UIAvatar } from "./ElementUtils";
-import BE, { useSession } from "../model/Backend";
 import AlertDialogRef from "./AlertDialog";
-import { SyncLoader } from "react-spinners";
+import { UIAvatar } from "./ElementUtils";
 
 /**
  * Located at top left of the header, use to toggling the menu panel
@@ -39,14 +39,46 @@ export function AppIcon(props: { to: string }) {
 }
 
 /**
- * Header searching bar
+ * Header searching bar, pack as a hook for other can retrieving search query
  */
+const SearchBarDelegate = {
+    onUpdate: (val: string) => { }
+}
+
+export function useSearchBar() {
+    const [searchQuery, setSearchQuery] = React.useState('')
+
+    // tracking search query updating from the component
+    React.useEffect(() => {
+        SearchBarDelegate.onUpdate = (val) => setSearchQuery(val)
+    }, [])
+
+    return searchQuery
+}
+
 function SearchBar(props: BoxProps) {
+    const [searchData, setSearchData] = React.useState('')
+
     return (
         <InputGroup {...props} >
-            <Input placeholder='Search' />
+            <Input placeholder='Search' value={searchData} onChange={(evt) => {
+                let query = evt.target.value
+                if (query) query = query.trim().toLowerCase();
+
+                setSearchData(query)
+                SearchBarDelegate.onUpdate(query)
+            }} />
+
+            {/* search icon or clear icon */}
             <InputRightElement>
-                <FaSearch color='green.500' />
+                {searchData
+                    ? <MdClear color='purple' onClick={() => {
+                        setSearchData('')
+                        SearchBarDelegate.onUpdate('')
+                    }} />
+                    : <FaSearch color='purple' />
+                }
+
             </InputRightElement>
         </InputGroup>
     )

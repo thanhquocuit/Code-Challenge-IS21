@@ -125,11 +125,18 @@ Main page styles across the app
             background-color: rgba(120, 0, 255, 0.2);
         }
     }
+
+    .kanban-column {
+        padding: 0.5rem;
+        border-radius: 0.5rem;
+        border: 2px rgba(212, 234, 250) solid;
+    }
 }
 
 .chakra-toast {
     color: white;
 }
+
 
 /* Dark theme */
 .chakra-ui-dark {
@@ -152,6 +159,12 @@ Main page styles across the app
 
     .chakra-toast {
         color: unset;
+    }
+
+    .kanban-board {
+        .kanban-column {
+            border-color: rgba(212, 234, 250, 0.21);
+        }
     }
 }
 

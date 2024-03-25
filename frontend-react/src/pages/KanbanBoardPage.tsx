@@ -2,15 +2,16 @@
  * Main home page: the kanban style board
  */
 
-import { Box, Button, Card, CardBody, CardHeader, Center, Flex, HStack, Heading, Icon, Stack, Text, useBreakpointValue, useColorMode } from '@chakra-ui/react';
+import { Box, Button, ButtonGroup, Card, CardBody, CardHeader, Flex, Heading, Icon, IconButton, Stack, Text, Tooltip, useBreakpointValue, useColorMode } from '@chakra-ui/react';
 import React from 'react';
-import { FaList } from 'react-icons/fa';
+import { CardFooter } from 'react-bootstrap';
+import { FaArrowLeft, FaArrowRight, FaEdit, FaList } from 'react-icons/fa';
 import { GrDrag } from "react-icons/gr";
 import { MdOutlineAdd } from 'react-icons/md';
 import { ReactSortable } from "react-sortablejs";
-import PageTemplate, { DataLoaderOp } from '../component/PageTemplate';
-import BE, { IOrder, IPaint, PaintStatus } from '../model/Backend';
 import { GridLoader } from 'react-spinners';
+import PageTemplate, { DataLoaderOp, useSearchBar } from '../component/PageTemplate';
+import BE, { IOrder, IPaint, PaintStatus } from '../model/Backend';
 
 
 function SVGPaintBucket(props: { color: string }) {
@@ -44,56 +45,151 @@ function SVGOrderItem(props: { color: string }) {
 }
 
 /**
- * The board note components
+ * The board note components: paints vs orders
  * 
  * @param color the paint color
  */
-function Note(props: {
-  id: number,
-  title: string, desc: string, color: string,
-  icon: React.ReactElement<typeof SVGPaintBucket | typeof SVGOrderItem>
-}) {
+function PaintBucket(props: { data: IPaint }) {
+
+  function handleShiftColumn(shiftIdx: number) {
+    const newStatus = props.data.status + shiftIdx;
+
+    // checking out of range
+    if (newStatus < 0 || newStatus > PaintStatus.OutOfStock) return;
+
+    BE.updatePaintStatus(props.data.id, newStatus, {
+      begin: () => DataLoaderOp.showLoading(),
+      end: () => {
+        DataLoaderOp.showCompleted()
+        BE.dataListeners.doStockUpdate()
+      }
+    })
+  }
+
+  const color = `#${props.data.color_code}`
   return (
     <Card mb='5'
       boxShadow='4px 4px 5px 2px rgba(0,0,0,0.2)'
       border="1px rgb(226, 232, 240) solid"
 
       // Custom attr hook for storing drag&drop information across columns
-      attr-dataid={props.id}>
+      attr-dataid={props.data.id}>
 
       {/* Heading text: where user can click and drag */}
       <CardHeader className='card-handle' display='flex'>
         <Box flex='0' minWidth='40px'>
           <Icon w={5} h={5} as={GrDrag} />
         </Box>
-        <Heading flex='2' size='md'>{props.title}</Heading>
+        <Heading flex='2' size='md'>{props.data.title}</Heading>
       </CardHeader>
 
       {/* Note body content */}
       <CardBody>
         <Flex justifyContent='space-between'>
-          <Text>{props.desc}</Text>
-          {props.icon}
+          <Box>
+            <Text mb='1'>Quantity: {props.data.quantity}</Text>
+            <Text mb='1'>Color Hex: #{props.data.color_code}</Text>
+            <Text mb='1'>{props.data.desc}</Text>
+          </Box>
+          <SVGPaintBucket color={color} />
         </Flex>
       </CardBody>
+
+      <CardFooter>
+        <Flex m='1' justifyContent='space-between'>
+          <Tooltip label='Edit the note content'>
+            <IconButton icon={<FaEdit />} aria-label='Edit' w='64px' colorScheme='red' variant='outline' />
+          </Tooltip>
+
+          {/* Move the note to left or right */}
+          <ButtonGroup isAttached>
+            <Tooltip label='Move the note to the next column'>
+              <IconButton icon={<FaArrowLeft />} aria-label='Move Left'
+                w='64px' colorScheme='green' variant='outline'
+                isDisabled={props.data.status == 0}
+                onClick={() => handleShiftColumn(-1)} />
+            </Tooltip>
+
+            <Tooltip label='Move the note to the previous column'>
+              <IconButton icon={<FaArrowRight />} aria-label='Move Right'
+                w='64px' colorScheme='green' variant='outline'
+                isDisabled={props.data.status == PaintStatus.OutOfStock}
+                onClick={() => handleShiftColumn(1)} />
+            </Tooltip>
+          </ButtonGroup>
+        </Flex>
+      </CardFooter>
     </Card>
   )
 }
 
-function PaintBucket(props: { data: IPaint }) {
-  const color = `#${props.data.color_code}`
-  return <Note id={props.data.id} title={props.data.title}
-    desc={props.data.desc}
-    color={color}
-    icon={<SVGPaintBucket color={color} />} />
-}
-
 function PaintOrder(props: { data: IOrder }) {
+  function handleShiftColumn(shiftIdx: number) {
+    const newStatus = props.data.status + shiftIdx;
+
+    // checking out of range
+    if (newStatus < 0 || newStatus > PaintStatus.OutOfStock) return;
+
+    BE.updateOrderStatus(props.data.id, newStatus, {
+      begin: () => DataLoaderOp.showLoading(),
+      end: () => {
+        DataLoaderOp.showCompleted()
+        BE.dataListeners.doStockUpdate()
+      }
+    })
+  }
+
   const color = `#ffff`
-  return <Note id={props.data.id} title={props.data.title}
-    desc={props.data.address}
-    color={color}
-    icon={<SVGOrderItem color={color} />} />
+  return (
+    <Card mb='5'
+      boxShadow='4px 4px 5px 2px rgba(0,0,0,0.2)'
+      border="1px rgb(226, 232, 240) solid"
+
+      // Custom attr hook for storing drag&drop information across columns
+      attr-dataid={props.data.id}>
+
+      {/* Heading text: where user can click and drag */}
+      <CardHeader className='card-handle' display='flex'>
+        <Box flex='0' minWidth='40px'>
+          <Icon w={5} h={5} as={GrDrag} />
+        </Box>
+        <Heading flex='2' size='md'>{props.data.title}</Heading>
+      </CardHeader>
+
+      {/* Note body content */}
+      <CardBody>
+        <Flex justifyContent='space-between'>
+          <Text>{props.data.address}</Text>
+          <SVGOrderItem color={color} />
+        </Flex>
+      </CardBody>
+
+      <CardFooter>
+        <Flex m='1' justifyContent='space-between'>
+          <Tooltip label='Edit the note content'>
+            <IconButton icon={<FaEdit />} aria-label='Edit' w='64px' colorScheme='red' variant='outline' />
+          </Tooltip>
+
+          {/* Move the note to left or right */}
+          <ButtonGroup isAttached>
+            <Tooltip label='Move the note to the next column'>
+              <IconButton icon={<FaArrowLeft />} aria-label='Move Left'
+                w='64px' colorScheme='green' variant='outline'
+                isDisabled={props.data.status == 0}
+                onClick={() => handleShiftColumn(-1)} />
+            </Tooltip>
+
+            <Tooltip label='Move the note to the previous column'>
+              <IconButton icon={<FaArrowRight />} aria-label='Move Right'
+                w='64px' colorScheme='green' variant='outline'
+                isDisabled={props.data.status == PaintStatus.OutOfStock}
+                onClick={() => handleShiftColumn(1)} />
+            </Tooltip>
+          </ButtonGroup>
+        </Flex>
+      </CardFooter>
+    </Card>
+  )
 }
 
 /**
@@ -105,10 +201,11 @@ function KanbanColumn(props: {
   column: number, items: (IPaint | IOrder)[], listGroup: string
 }) {
   const [state, setState] = React.useState<any[]>(props.items);
+  React.useEffect(() => setState(props.items), [props.items])
 
   return (
-    <Box w='100%' h='100%'>
-      <Text fontSize='larger' fontWeight='bold'>{props.title}</Text>
+    <Box className='kanban-column' w='100%' h='100%' >
+      <Text fontSize='x-large' fontWeight='bold'>{props.title}</Text>
 
       {/* Integrating Sortable API */}
       <ReactSortable
@@ -142,6 +239,9 @@ function KanbanColumn(props: {
             ? <PaintBucket key={item.id} data={item} />
             : <PaintOrder key={item.id} data={item} />
         ))}
+
+        {/* Pumpet div to keep the column height always have spare space for droping */}
+        <Box minH='32px'></Box>
       </ReactSortable>
     </Box>
   );
@@ -159,6 +259,10 @@ function KanbanBoard(props: {
   data: (IPaint | IOrder)[],
   headerButtons?: React.ReactNode
 }) {
+
+  /* useEffect hook for tracking props.data update */
+  const [items, setItems] = React.useState(props.data)
+  React.useEffect(() => setItems(props.data), [props.data])
 
   /*
   Generate drag&drop group name from the title, the content of group name is not important. 
@@ -183,15 +287,15 @@ function KanbanBoard(props: {
 
         {/* Column 1: Available */}
         <KanbanColumn title={props.columns[0]} column={PaintStatus.Available} type={props.type} listGroup={listGroup}
-          items={props.data.filter(a => a.status == PaintStatus.Available)} />
+          items={items.filter(a => a.status == PaintStatus.Available)} />
 
         {/* Column 2: Running Low */}
         <KanbanColumn title={props.columns[1]} column={PaintStatus.RunningLow} type={props.type} listGroup={listGroup}
-          items={props.data.filter(a => a.status == PaintStatus.RunningLow)} />
+          items={items.filter(a => a.status == PaintStatus.RunningLow)} />
 
         {/* Column 3: Out of Stock */}
         <KanbanColumn title={props.columns[2]} column={PaintStatus.OutOfStock} type={props.type} listGroup={listGroup}
-          items={props.data.filter(a => a.status == PaintStatus.OutOfStock)} />
+          items={items.filter(a => a.status == PaintStatus.OutOfStock)} />
       </Flex>
     </Box>
   )
@@ -205,12 +309,22 @@ export default function KanbanBoardPage() {
   const [isReady, setReady] = React.useState(false)
   const [data, setData] = React.useState({ paints: [] as IPaint[], orders: [] as IOrder[] })
 
+  const searchQuery = useSearchBar()
+  function filterBySearch(ls: any[]) {
+    if (!searchQuery) return ls
+
+    return ls.filter(a => JSON.stringify(a).toLowerCase().search(searchQuery) != -1)
+  }
+
   // on mounted: fetching data from server
   React.useEffect(() => {
     BE.getPaintStocks().then((resp) => {
       setReady(true);
       setData(resp);
     })
+    BE.dataListeners.cb = (resp) => {
+      setData({ ...resp });
+    }
   }, [])
 
   function Separator() {
@@ -223,7 +337,7 @@ export default function KanbanBoardPage() {
       <PageTemplate>
         {/* Board 1: the paint stock showing the quality of paints in inventory */}
         <KanbanBoard
-          title="Paint Stock" columns={['Available', 'Running Low', 'Out of Stock']} type='paint' data={data.paints}
+          title="Paint Stock" columns={['Available', 'Running Low', 'Out of Stock']} type='paint' data={filterBySearch(data.paints)}
           headerButtons={
             <Button leftIcon={<MdOutlineAdd />} colorScheme="green">
               Add new paint
@@ -233,7 +347,7 @@ export default function KanbanBoardPage() {
         {/* Board 2: the paint orders: houses and painting progress */}
         <Separator />
 
-        <KanbanBoard title="Orders" columns={['Waiting', 'Painting', 'Completed']} type='order' data={data.orders}
+        <KanbanBoard title="Orders" columns={['Waiting', 'Painting', 'Completed']} type='order' data={filterBySearch(data.orders)}
           headerButtons={
             <Button leftIcon={<MdOutlineAdd />} colorScheme="green">
               Add new order

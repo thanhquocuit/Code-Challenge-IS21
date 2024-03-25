@@ -130,6 +130,13 @@ async function updateOrderStatus(itemID: number, status: number, tracker: Progre
     tracker.end();
 }
 
+const dataListeners = {
+    cb: (val: any) => { },
+    doStockUpdate: () => {
+        dataListeners.cb(Cached.stock)
+    }
+}
+
 export function useSession(): IUser {
     return Cached.session
 }
@@ -142,6 +149,7 @@ export default {
     useSession,
 
     // data API
+    dataListeners,
     getPaintStocks,
     updatePaintStatus,
     updateOrderStatus
