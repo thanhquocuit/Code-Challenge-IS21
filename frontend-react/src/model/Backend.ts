@@ -5,15 +5,18 @@
 import axios from "axios";
 
 export enum UserRoles {
-    Standard = 0,
-    Admin = 1,
+    Painter = 0,
+    Marketing = 1,
+    Admin = 999,
 }
 
 export interface IUser {
     id: number;
     email: string;
     name: string;
+    job: string;
     role: UserRoles;
+    disabled: number;
 }
 
 export interface IPaint {
@@ -42,12 +45,13 @@ export interface IOrder {
     completed_by: string;
 }
 
-export interface ProgressTracker { begin: () => void, end: () => void }
+export interface ProgressTracker { begin: () => void, end: (err?: string) => void }
 
 const Cached = {
     sessionLoaded: false,
     session: { id: -1, email: '', name: '', role: 0 } as IUser,
-    stock: { paints: [] as IPaint[], orders: [] as IOrder[] }
+    stock: { paints: [] as IPaint[], orders: [] as IOrder[] },
+    users: [] as IUser[]
 }
 
 async function acquireSession() {
@@ -74,7 +78,7 @@ function isAdmin() {
 
 async function login(email: string, password: string, cb: {
     thenFn: (session: IUser | undefined) => void,
-    catchFn: () => void,
+    catchFn: (err: string) => void,
     finallyFn: () => void
 }) {
     axios.post('/api/auth/login', { email, password })
@@ -89,8 +93,8 @@ async function login(email: string, password: string, cb: {
 
             cb.thenFn(resp.data)
         })
-        .catch(() => {
-            cb.catchFn()
+        .catch((err) => {
+            cb.catchFn(err.response?.data?.error ?? 'Incorrect email or password')
         })
         .finally(() => {
             cb.finallyFn()
@@ -98,7 +102,7 @@ async function login(email: string, password: string, cb: {
 }
 
 async function logout() {
-    Cached.session = { id: -1, email: '', name: '', role: 0 }; // clean up the session
+    Cached.session = { id: -1, email: '', name: '', job: '', role: 0, disabled: 0 }; // clean up the session
     await axios.get('/api/auth/logout');
 }
 
@@ -130,10 +134,58 @@ async function updateOrderStatus(itemID: number, status: number, tracker: Progre
     tracker.end();
 }
 
+async function getUsers() {
+    const resp = await axios.get('/api/users/all');
+    Cached.users = resp.data?.users || []
+    return Cached.users;
+}
+
+async function updateUserStatus(itemID: number, disabled: number, tracker: ProgressTracker) {
+    tracker.begin();
+
+    const user = Cached.users.find(a => a.id == itemID);
+    if (user) {
+        user.disabled = disabled;
+        await axios.put('/api/users/update', { user });
+    }
+    tracker.end();
+}
+
+async function updateUserRole(itemID: number, role: number, tracker: ProgressTracker) {
+    tracker.begin();
+
+    const user = Cached.users.find(a => a.id == itemID);
+    if (user) {
+        user.role = role;
+        await axios.put('/api/users/update', { user });
+    }
+    tracker.end();
+}
+
+
+async function createUser(name: string, email: string, role: number, tracker: ProgressTracker) {
+    tracker.begin();
+
+    const user = { id: 0, email, name, job: '', role, disabled: 0 }
+    const reps = await axios.post('/api/users/add', { user });
+    if (reps.data?.error) {
+        tracker.end(reps.data.error);
+    }
+    else if (reps.data?.users) {
+        Cached.users = reps.data.users
+        tracker.end();
+    }
+}
+
+
 const dataListeners = {
-    cb: (val: any) => { },
+    cbStockData: (_val: any) => { },
+    cbUserData: (_val: any) => { },
     doStockUpdate: () => {
-        dataListeners.cb(Cached.stock)
+        dataListeners.cbStockData(Cached.stock)
+    },
+    doUserUpdate: () => {
+        dataListeners.cbUserData(Cached.users)
     }
 }
 
@@ -152,5 +204,11 @@ export default {
     dataListeners,
     getPaintStocks,
     updatePaintStatus,
-    updateOrderStatus
+    updateOrderStatus,
+
+    // system admin
+    getUsers,
+    updateUserStatus,
+    updateUserRole,
+    createUser,
 } as const

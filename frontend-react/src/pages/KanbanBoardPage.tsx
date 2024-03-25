@@ -12,6 +12,7 @@ import { ReactSortable } from "react-sortablejs";
 import { GridLoader } from 'react-spinners';
 import PageTemplate, { DataLoaderOp, useSearchBar } from '../component/PageTemplate';
 import BE, { IOrder, IPaint, PaintStatus } from '../model/Backend';
+import { useLocation } from 'react-router-dom';
 
 
 function SVGPaintBucket(props: { color: string }) {
@@ -308,12 +309,13 @@ export default function KanbanBoardPage() {
 
   const [isReady, setReady] = React.useState(false)
   const [data, setData] = React.useState({ paints: [] as IPaint[], orders: [] as IOrder[] })
+  const location = useLocation();
 
-  const searchQuery = useSearchBar()
+  const searchBar = useSearchBar()
   function filterBySearch(ls: any[]) {
-    if (!searchQuery) return ls
+    if (!searchBar) return ls
 
-    return ls.filter(a => JSON.stringify(a).toLowerCase().search(searchQuery) != -1)
+    return ls.filter(a => JSON.stringify(a).toLowerCase().search(searchBar) != -1)
   }
 
   // on mounted: fetching data from server
@@ -322,7 +324,7 @@ export default function KanbanBoardPage() {
       setReady(true);
       setData(resp);
     })
-    BE.dataListeners.cb = (resp) => {
+    BE.dataListeners.cbStockData = (resp) => {
       setData({ ...resp });
     }
   }, [])
@@ -332,30 +334,33 @@ export default function KanbanBoardPage() {
     return <hr style={{ width }} />
   }
 
-  return isReady
-    ? (
-      <PageTemplate>
-        {/* Board 1: the paint stock showing the quality of paints in inventory */}
-        <KanbanBoard
-          title="Paint Stock" columns={['Available', 'Running Low', 'Out of Stock']} type='paint' data={filterBySearch(data.paints)}
-          headerButtons={
-            <Button leftIcon={<MdOutlineAdd />} colorScheme="green">
-              Add new paint
-            </Button>
-          } />
+  if (isReady) {
 
-        {/* Board 2: the paint orders: houses and painting progress */}
-        <Separator />
+    /* Board 1: the paint stock showing the quality of paints in inventory */
+    const paintBoard = <KanbanBoard
+      title="Paint Stock" columns={['Available', 'Running Low', 'Out of Stock']} type='paint' data={filterBySearch(data.paints)}
+      headerButtons={
+        <Button leftIcon={<MdOutlineAdd />} colorScheme="green">
+          Add new paint
+        </Button>
+      } />
 
-        <KanbanBoard title="Orders" columns={['Waiting', 'Painting', 'Completed']} type='order' data={filterBySearch(data.orders)}
-          headerButtons={
-            <Button leftIcon={<MdOutlineAdd />} colorScheme="green">
-              Add new order
-            </Button>} />
+    /* Board 2: the paint orders: houses and painting progress */
+    const orderBoard = <KanbanBoard title="Orders" columns={['Waiting', 'Painting', 'Completed']} type='order' data={filterBySearch(data.orders)}
+      headerButtons={
+        <Button leftIcon={<MdOutlineAdd />} colorScheme="green">
+          Add new order
+        </Button>} />
 
-      </PageTemplate>
-    )
-    : (
+    let element = [paintBoard, <Separator />, orderBoard]
+    if (location.hash == '#orders') {
+      element = [orderBoard, <Separator />, paintBoard]
+    }
+    return <PageTemplate>{element}</PageTemplate>
+  }
+  else
+
+    return (
       <PageTemplate>
         <Box w='350px' m='auto' mt='5rem'>
           <Box ml='100px'>

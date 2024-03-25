@@ -26,12 +26,15 @@ async function getAll(): Promise<IUser[]> {
 /**
  * Add one user.
  */
-async function add(user: IUser): Promise<void> {
-  return new Promise<void>((resovle) => {
+async function add(user: IUser): Promise<number> {
+  return new Promise<number>((resovle) => {
     const pwdHash = '$2b$12$1mE2OI9hMS/rgH9Mi0s85OM2V5gzm7aF3gJIWH1y0S1MqVBueyjsy'; // default password is: Password@1
-    Db.connPool.run(`INSERT INTO "User" ("email", "name", "pwdHash", "role") VALUES (?, ?, ?, ?)`, [
-      user.email, user.name, pwdHash, 0
-    ], () => resovle())
+    Db.connPool.run(`INSERT INTO "User" ("email", "name", "job", "pwdHash", "role", "disabled") VALUES (?, ?, ?, ?, ?, ?)`, [
+      user.email, user.name, user.job, pwdHash, 0, 0
+    ], function () {
+      const thisObj = this as any;
+      resovle(thisObj.lastID)
+    })
   })
 }
 
@@ -40,8 +43,8 @@ async function add(user: IUser): Promise<void> {
  */
 async function update(user: IUser): Promise<void> {
   return new Promise<void>((resovle) => {
-    Db.connPool.run(`UPDATE "User" SET "name"=?, "pwdHash"=?, "role"=? WHERE id=?`,
-      [user.name, user.pwdHash, user.role, user.id]);
+    Db.connPool.run(`UPDATE "User" SET "name"=?, "job"=?, "pwdHash"=?, "role"=?, "disabled"=? WHERE id=?`,
+      [user.name, user.job, user.pwdHash, user.role, user.disabled, user.id]);
     resovle();
   })
 }

@@ -1,11 +1,10 @@
-import { Box, Card, HStack, CardBody, Heading, Text, FormControl, FormLabel, FormHelperText, Input, Button, FormErrorMessage, Center, Switch, Alert, AlertIcon, AlertTitle } from "@chakra-ui/react";
-import { ThemeToggler } from "../component/PageTemplate";
+import { Alert, AlertIcon, AlertTitle, Box, Button, Card, CardBody, Center, FormControl, FormErrorMessage, FormLabel, HStack, Heading, Input, Switch, Text } from "@chakra-ui/react";
 import { Field, Form, Formik } from 'formik';
-import axios from "axios";
-import { useNavigate } from "react-router-dom";
 import React from "react";
-import BE from '../model/Backend'
+import { useNavigate } from "react-router-dom";
 import AlertDialogRef from "../component/AlertDialog";
+import { ThemeToggler } from "../component/PageTemplate";
+import BE from '../model/Backend';
 
 /**
  * Login from using Formik for easy from validation
@@ -41,9 +40,8 @@ function LoginForm() {
 
                     nav('/')
                 },
-                catchFn: () => {
-                    // login error
-                    setErrorMsg('Incorrect email or password')
+                catchFn: (err) => {
+                    setErrorMsg(err) // login error
                 },
                 finallyFn: () => {
                     // stop spining the buttons

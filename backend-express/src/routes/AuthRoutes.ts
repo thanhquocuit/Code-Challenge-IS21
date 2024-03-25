@@ -10,6 +10,7 @@ import { IReq, IRes } from './types/express/misc';
 
 const Errors = {
   Unauth: 'Unauthorized',
+  Disabled: 'Account was deactivated',
   EmailNotFound(email: string) {
     return `User with email "${email}" not found`;
   },
@@ -47,6 +48,14 @@ async function login(req: IReq<ILoginReq>, res: IRes) {
     throw new RouteError(
       HttpStatusCodes.UNAUTHORIZED,
       Errors.Unauth,
+    );
+  }
+
+  // account is disabled
+  if (user.disabled) {
+    throw new RouteError(
+      HttpStatusCodes.UNAUTHORIZED,
+      Errors.Disabled,
     );
   }
 

@@ -21,8 +21,19 @@ async function getAll(_: IReq, res: IRes) {
  */
 async function add(req: IReq<{ user: IUser }>, res: IRes) {
   const { user } = req.body;
+
+  // check email existing
+  const existings = await UserRepo.getOne(user.email);
+  if (existings) {
+    return res.status(HttpStatusCodes.OK).json({ error: 'User has been existing' });
+  }
+
+  // add new user
   await UserRepo.add(user);
-  return res.status(HttpStatusCodes.CREATED).end();
+
+  // retreive new data
+  const users = await UserRepo.getAll();
+  return res.status(HttpStatusCodes.CREATED).json({ users });
 }
 
 /**

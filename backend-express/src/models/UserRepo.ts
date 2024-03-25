@@ -4,8 +4,9 @@ const INVALID_CONSTRUCTOR_PARAM = 'nameOrObj arg must a string or an ' +
   'object with the appropriate user keys.';
 
 export enum UserRoles {
-  Standard = 0,
-  Admin = 1,
+  Painter = 0,
+  Marketing = 1,
+  Admin = 999,
 }
 
 
@@ -15,8 +16,10 @@ export interface IUser {
   id: number;
   email: string;
   name: string;
+  job: string;
   pwdHash: string;
   role: UserRoles;
+  disabled: number;
 }
 
 export interface ISessionUser {
@@ -35,7 +38,9 @@ export interface ISessionUser {
 function new_(
   name?: string,
   email?: string,
+  job?: string,
   role?: UserRoles,
+  disabled?: number,
   pwdHash?: string,
   id?: number, // id last cause usually set by db
 ): IUser {
@@ -43,7 +48,9 @@ function new_(
     id: (id ?? -1),
     name: (name ?? ''),
     email: (email ?? ''),
-    role: (role ?? UserRoles.Standard),
+    job: (job ?? ''),
+    role: (role ?? UserRoles.Painter),
+    disabled: (disabled ?? 0),
     pwdHash: (pwdHash ?? ''),
   };
 }
@@ -58,7 +65,7 @@ function from(param: object): IUser {
   }
   // Get user instance
   const p = param as IUser;
-  return new_(p.name, p.email, p.role, p.pwdHash, p.id);
+  return new_(p.name, p.email, p.job, p.role, p.disabled, p.pwdHash, p.id);
 }
 
 /**
@@ -71,7 +78,9 @@ function isUser(arg: unknown): boolean {
     'id' in arg &&
     'email' in arg &&
     'name' in arg &&
-    'role' in arg
+    'job' in arg &&
+    'role' in arg &&
+    'disabled' in arg
   );
 }
 
